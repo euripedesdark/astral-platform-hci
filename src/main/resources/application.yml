@@ -145,13 +145,10 @@ astral:
   firewall:
     url: "${ASTRAL_FIREWALL_URL:http://127.0.0.1:8040}"
 
-  graylog:
-    # GELF/UDP escrito a mao em GraylogAuditPublisher; cai para JSONL se faltar.
-    enabled: "${ASTRAL_GRAYLOG_ENABLED:true}"
-    host: "${ASTRAL_GRAYLOG_HOST:127.0.0.1}"
-    gelf-port: "${ASTRAL_GRAYLOG_GELF_PORT:12201}"
+  audit:
+    enabled: "${ASTRAL_AUDIT_ENABLED:true}"
     queue-capacity: 8192
-    fallback-file: "${ASTRAL_GRAYLOG_FALLBACK:/var/log/astral/graylog-fallback.jsonl}"
+    fallback-file: "${ASTRAL_AUDIT_FALLBACK:/var/log/astral/audit-fallback.jsonl}"
 
   acl:
     # Fechado por padrao nos dois pontos em que o codigo pode escolher.

@@ -1,6 +1,6 @@
 package com.astral.fabric.reconciliation;
 
-import com.astral.fabric.proxy.audit.GraylogAuditPublisher;
+import com.astral.fabric.proxy.audit.PostgresAuditPublisher;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,12 +49,12 @@ public class ReconciliationEngine {
 
     private final Map<ReconcileModule, ReconcilableModule> modulos = new LinkedHashMap<>();
     private final IntentRepo repo;
-    private final GraylogAuditPublisher auditoria;
+    private final PostgresAuditPublisher auditoria;
     private final ObjectMapper json;
 
     public ReconciliationEngine(List<ReconcilableModule> beans,
                                 IntentRepo repo,
-                                GraylogAuditPublisher auditoria,
+                                PostgresAuditPublisher auditoria,
                                 ObjectMapper json) {
         this.repo = repo;
         this.auditoria = auditoria;
