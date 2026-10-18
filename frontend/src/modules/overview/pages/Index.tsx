@@ -7,7 +7,7 @@ export const MODS=[
  {id:'Traffic Server',did:'proxy',img:'/images/proxy_system.png',desc:'Proxy ATS 3128 + auth AD'},
  {id:'Active Directory',did:'domain',img:'/images/domain_controllers.png',desc:'Samba AD, LDAPS 636'},
  {id:'PostgreSQL',did:'postgres',img:'/images/postgresql_admin.png',desc:'Banco astral, mTLS'},
- {id:'Observabilidade',did:'web',img:'/images/web_server_admin.png',desc:'Graylog + métricas'},
+ {id:'Observabilidade',did:'web',img:'/images/web_server_admin.png',desc:'Grafana + PostgreSQL'},
  {id:'Computação',did:'vm',img:'/images/virtual_machines.png',desc:'KVM e contêineres OCI'},
  {id:'Rede',did:'network',img:'/images/network_config_vlan.png',desc:'VLANs e tecido'},
  {id:'Endereçamento',did:'enderecamento',img:'/images/network_config_vlan.png',desc:'IPs fixos, interfaces, gateway e DNS'},

@@ -23,12 +23,8 @@ management:
       show-details: always
 
 astral:
-  graylog:
-    # /var/log/astral e' do usuario astral e o processo de dev nao e' esse
-    # usuario. Deixar o fallback no tmpdir e' o mesmo padrao do GraylogAuditPublisher,
-    # e evita o dev perder a trilha de auditoria por causa de permissao -- que e'
-    # o jeito mais facil de uma trilha de auditoria nunca ser lida.
-    fallback-file: "${ASTRAL_GRAYLOG_FALLBACK:${java.io.tmpdir}/astral/graylog-fallback.jsonl}"
+  audit:
+    fallback-file: "${ASTRAL_AUDIT_FALLBACK:${java.io.tmpdir}/astral/audit-fallback.jsonl}"
 
 logging:
   level:

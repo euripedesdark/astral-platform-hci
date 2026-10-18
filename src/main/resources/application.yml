@@ -99,6 +99,7 @@ server:
     session:
       timeout: 8h
       cookie:
+        name: ASTRAL_SESSION
         http-only: true
         same-site: lax
         # true = cookie so trafega por HTTPS. Fica false por padrao porque o
@@ -109,6 +110,13 @@ server:
         secure: "${ASTRAL_COOKIE_SECURE:false}"
 
 astral:
+  grafana:
+    dashboard-url: "${ASTRAL_GRAFANA_DASHBOARD_URL:}"
+  sso:
+    enabled: "${ASTRAL_SSO_ENABLED:false}"
+    issuer: "${ASTRAL_SSO_ISSUER:http://192.168.2.10:8181}"
+    client-id: "${ASTRAL_SSO_CLIENT_ID:grafana}"
+    client-secret: "${ASTRAL_SSO_CLIENT_SECRET:}"
   auth:
     postgres:
       enabled: "${ASTRAL_AUTH_POSTGRES_ENABLED:true}"
@@ -145,13 +153,11 @@ astral:
   firewall:
     url: "${ASTRAL_FIREWALL_URL:http://127.0.0.1:8040}"
 
-  graylog:
-    # GELF/UDP escrito a mao em GraylogAuditPublisher; cai para JSONL se faltar.
-    enabled: "${ASTRAL_GRAYLOG_ENABLED:true}"
-    host: "${ASTRAL_GRAYLOG_HOST:127.0.0.1}"
-    gelf-port: "${ASTRAL_GRAYLOG_GELF_PORT:12201}"
+  audit:
+    retention-days: "${ASTRAL_AUDIT_RETENTION_DAYS:30}"
+    enabled: "${ASTRAL_AUDIT_ENABLED:true}"
     queue-capacity: 8192
-    fallback-file: "${ASTRAL_GRAYLOG_FALLBACK:/var/log/astral/graylog-fallback.jsonl}"
+    fallback-file: "${ASTRAL_AUDIT_FALLBACK:/var/log/astral/audit-fallback.jsonl}"
 
   acl:
     # Fechado por padrao nos dois pontos em que o codigo pode escolher.
@@ -177,7 +183,7 @@ astral:
     # os dois precisam casar. Divergir nao' furo de seguranca (o Spring Security
     # continua sendo o portao de verdade das APIs), e' no maximo um login
     # bloqueado ou uma tela publica que passou a exigir sessao.
-    public-paths: "${ASTRAL_ACL_PUBLIC_PATHS:/,/login,/home,/inicio,/app/,/assets/,/images/,/favicon.ico,/api/auth/login,/api/certs/ca/download,/error,/actuator/,/v3/api-docs/,/swagger-ui/}"
+    public-paths: "${ASTRAL_ACL_PUBLIC_PATHS:/,/login,/home,/inicio,/app/,/assets/,/images/,/favicon.ico,/api/auth/login,/api/auth/sso,/oauth2/,/login/oauth2/,/api/certs/ca/download,/error,/actuator/,/v3/api-docs/,/swagger-ui/}"
     # Indice do PASSO A: TTL curto porque excecao nova precisa valer rapido, mas
     # TTL porque reconstruir a cada requisicao transformaria 2ms em consulta ao
     # banco.

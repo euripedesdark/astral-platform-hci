@@ -1,9 +1,13 @@
 import React,{useEffect,useState}from'react';
 import{Button}from'primereact/button';import{Tag}from'primereact/tag';import{ProgressSpinner}from'primereact/progressspinner';
-import{me,logout}from'./shared/services/api';
+import{api,me,logout}from'./shared/services/api';
 import Login from'./shared/components/Login';
 import{ORDER,ICONS,PAGES}from'./routes/routes';
-function App(){const[user,setUser]=useState(null),[loading,setLoading]=useState(true),[section,setSection]=useState('Visão geral');useEffect(()=>{me().then(setUser).catch(()=>{}).finally(()=>setLoading(false))},[]);if(loading)return <div className="center"><ProgressSpinner/></div>;if(!user)return <Login onAuth={setUser}/>;const isAdmin=(user.authorities||[]).some(a=>a.authority==='ROLE_ASTRAL_ADMIN');const Page=PAGES[section];return <div className="page">
+function App(){const[user,setUser]=useState(null),[loading,setLoading]=useState(true),[section,setSection]=useState('Visão geral');useEffect(()=>{me().then(setUser).catch(async()=>{
+ const params=new URLSearchParams(window.location.search);
+ if(params.has('local')||params.has('ssoError'))return;
+ try{const sso=await api<{enabled:boolean;authorizationUrl:string}>('/api/auth/sso');if(sso.enabled)window.location.assign(sso.authorizationUrl);}catch(_){}
+ }).finally(()=>setLoading(false))},[]);if(loading)return <div className="center"><ProgressSpinner/></div>;if(!user)return <Login onAuth={setUser}/>;const isAdmin=(user.authorities||[]).some(a=>a.authority==='ROLE_ASTRAL_ADMIN');const Page=PAGES[section];return <div className="page">
 <header className="topbar"><div className="brand">ASTRAL<small>Platform & HCI</small></div>
 <div className="topright">{section!=='Visão geral'&&<Button label="Início" icon="pi pi-home" onClick={()=>setSection('Visão geral')}/>}
 <Tag value={isAdmin?'ADMIN':'USER'} severity="info"/><Button text label={user.username} icon="pi pi-user"/><Button text label="Sair" icon="pi pi-sign-out" onClick={async()=>{await logout();setUser(null)}}/></div></header>

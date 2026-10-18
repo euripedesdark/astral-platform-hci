@@ -21,5 +21,7 @@ jobs:
       - name: Build PrimeReact
         working-directory: frontend
         run: npm install && npm run build
+      - name: Verify shared Grafana provisioning
+        run: python3 -m unittest discover -s scripts/tests -v
       - name: Build Spring Boot
         run: mvn -B clean verify

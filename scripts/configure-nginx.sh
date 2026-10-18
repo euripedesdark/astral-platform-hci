@@ -215,6 +215,20 @@ server {
     # nao aceita aspas simples no 'return' e o HTML tem espaco e attributes.
     # So' o auth_request cai aqui: resposta 403 vinda da aplicacao nao e'
     # interceptada (proxy_intercept_errors fica desligado).
+    # Authorization request/callback precisam chegar ao Spring sem o ACL de navegacao.
+    location /oauth2/ {
+        proxy_pass http://astral_app;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+    location /login/oauth2/ {
+        proxy_pass http://astral_app;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
     location / {
         # Rota de ACL. O que e' publico (login, assets, SPA, swagger) e'
         # decidido DENTRO do motor, em /api/v1/acl/check, para que a lista de

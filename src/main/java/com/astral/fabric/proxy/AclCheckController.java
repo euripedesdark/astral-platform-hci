@@ -63,7 +63,7 @@ public class AclCheckController {
 
     public AclCheckController(AclIdentityResolver identidades,
                               AclEvaluatorService motor,
-                              @Value("${astral.acl.public-paths:/,/login,/home,/inicio,/app/,/assets/,/images/,/favicon.ico,/api/auth/login,/api/certs/ca/download,/error,/actuator/,/v3/api-docs/,/swagger-ui/}")
+                              @Value("${astral.acl.public-paths:/,/login,/home,/inicio,/app/,/assets/,/images/,/favicon.ico,/api/auth/login,/api/auth/sso,/oauth2/,/login/oauth2/,/api/certs/ca/download,/error,/actuator/,/v3/api-docs/,/swagger-ui/}")
                               String publicos) {
         this.identidades = identidades;
         this.motor = motor;

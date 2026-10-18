@@ -40,7 +40,8 @@ note "e a tela tem de responder, nao 404: /app/ nao resolvia indice de diretorio
 expect "$(code --cacert /etc/nginx/tls/ca.crt --resolve astral.srvcloud.cloud:443:127.0.0.1 https://astral.srvcloud.cloud/app/)" 200 "tela em /app/"
 note "componentes vizinhos"
 command -v traffic_ctl >/dev/null&&check systemctl is-active trafficserver
-systemctl list-unit-files graylog-server.service >/dev/null 2>&1&&check systemctl is-active graylog-server
+check systemctl is-active grafana-server
+
 
 if [ "$fail" -eq 0 ];then echo "[OK]   verificacao do Astral passou inteira";else echo "[FALHA] houve verificacoes acima marcadas como FAIL";fi
 exit "$fail"

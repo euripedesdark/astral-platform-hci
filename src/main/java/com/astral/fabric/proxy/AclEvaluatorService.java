@@ -1,6 +1,6 @@
 package com.astral.fabric.proxy;
 
-import com.astral.fabric.proxy.audit.GraylogAuditPublisher;
+import com.astral.fabric.proxy.audit.PostgresAuditPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,8 +42,8 @@ import java.util.Optional;
  *   <li><i>Fallback sobre dependencia.</i> Redis fora cai para PostgreSQL;
  *       PostgreSQL fora devolve 401 e nao 200. Nada de fail-open porque um
  *       cache caiu.</li>
- *   <li><i>Auditoria fora do caminho quente.</i> Cada decisao vira evento GELF
- *       assincrono; se o Graylog sumir, o JSONL de fallback guarda a trilha.</li>
+ *   <li><i>Auditoria fora do caminho quente.</i> Cada decisao vira evento PostgreSQL
+ *       assincrono; se o PostgreSQL sumir, o JSONL de fallback guarda a trilha.</li>
  * </ul>
  */
 @Service
@@ -61,7 +61,7 @@ public class AclEvaluatorService {
     private final AclRuleRepo regras;
     private final AclDomainOverrideRepo overrides;
     private final AclCacheService cache;
-    private final GraylogAuditPublisher auditoria;
+    private final PostgresAuditPublisher auditoria;
 
     private final String semRegra;
     private final String semCategoria;
@@ -84,7 +84,7 @@ public class AclEvaluatorService {
                                AclRuleRepo regras,
                                AclDomainOverrideRepo overrides,
                                AclCacheService cache,
-                               GraylogAuditPublisher auditoria,
+                               PostgresAuditPublisher auditoria,
                                @Value("${astral.acl.default-without-rule:DENY}") String semRegra,
                                @Value("${astral.acl.default-uncategorized:ALLOW}") String semCategoria,
                                @Value("${astral.acl.audit.enabled:true}") boolean auditoriaHabilitada,
@@ -403,7 +403,7 @@ public class AclEvaluatorService {
         extra.put("grupos", identidade == null ? "" : identidade.chaveGrupos());
         extra.put("ip", ip == null ? "-" : ip);
         extra.put("latencia_ms", d.ms());
-        // Assistincrono de verdade: publicar enfileira e devolve. Se o Graylog
+        // Assistincrono de verdade: publicar enfileira e devolve. Se o PostgreSQL
         // nao responder, o evento cai no JSONL -- ele nao some.
         auditoria.audit(usuario, "acl", d.action(), AclDomain.normaliza(host),
                 String.valueOf(d.status()), extra);

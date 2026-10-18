@@ -11,6 +11,9 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 public class LoginController {
+ @org.springframework.beans.factory.annotation.Value("${astral.sso.enabled:false}") boolean ssoEnabled;
+ @GetMapping("/sso")
+ public Map<String,Object> sso(){return Map.of("enabled",ssoEnabled,"authorizationUrl","/oauth2/authorization/auth-service");}
  private final AuthenticationManager manager;
  private final HttpSessionSecurityContextRepository repository=new HttpSessionSecurityContextRepository();
  public LoginController(AuthenticationManager manager){this.manager=manager;}
