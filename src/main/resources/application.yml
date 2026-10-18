@@ -110,6 +110,8 @@ server:
         secure: "${ASTRAL_COOKIE_SECURE:false}"
 
 astral:
+  grafana:
+    dashboard-url: "${ASTRAL_GRAFANA_DASHBOARD_URL:}"
   sso:
     enabled: "${ASTRAL_SSO_ENABLED:false}"
     issuer: "${ASTRAL_SSO_ISSUER:http://192.168.2.10:8181}"

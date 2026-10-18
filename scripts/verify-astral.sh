@@ -41,7 +41,7 @@ expect "$(code --cacert /etc/nginx/tls/ca.crt --resolve astral.srvcloud.cloud:44
 note "componentes vizinhos"
 command -v traffic_ctl >/dev/null&&check systemctl is-active trafficserver
 check systemctl is-active grafana-server
-check curl -fsS http://127.0.0.1:3000/grafana/api/health
+
 
 if [ "$fail" -eq 0 ];then echo "[OK]   verificacao do Astral passou inteira";else echo "[FALHA] houve verificacoes acima marcadas como FAIL";fi
 exit "$fail"

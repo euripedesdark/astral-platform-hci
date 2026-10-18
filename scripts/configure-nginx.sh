@@ -215,20 +215,6 @@ server {
     # nao aceita aspas simples no 'return' e o HTML tem espaco e attributes.
     # So' o auth_request cai aqui: resposta 403 vinda da aplicacao nao e'
     # interceptada (proxy_intercept_errors fica desligado).
-    # Grafana escuta internamente em 3000 e conserva o prefixo /grafana/.
-    # A autenticacao deste caminho e OAuth2 do Grafana, sem auth_request do proxy.
-    location = /grafana { return 302 /grafana/; }
-    location /grafana/ {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Host $http_host;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection $connection_upgrade;
-        add_header Content-Security-Policy "frame-ancestors 'self'" always;
-    }
-
     # Authorization request/callback precisam chegar ao Spring sem o ACL de navegacao.
     location /oauth2/ {
         proxy_pass http://astral_app;

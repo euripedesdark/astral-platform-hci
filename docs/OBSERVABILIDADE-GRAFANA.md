@@ -1,84 +1,74 @@
-# Observabilidade do Astral: Grafana, PostgreSQL e OAuth2/OIDC
+# Astral no Grafana existente do BI
 
-O card **Observabilidade** da tela inicial abre o dashboard `astral-observability`
-em iframe, dentro do Astral. O dashboard inicial provisionado inclui auditoria,
-CPU e memoria. O Grafana escuta em **3000/tcp**; o navegador acessa
-`/grafana/` pelo Nginx HTTPS do Astral, evitando conteudo misto e mantendo os
-cookies do Grafana na mesma origem do portal.
+O Astral reutiliza **a mesma instancia Grafana na porta 3000** ja usada pelo
+modulo BI do Brasil SaaS ERP, inclusive OAuth, URL publica, cookies e banco de
+metadados existentes. Nao instala outro Grafana e nao reconfigura o existente.
 
-## Login central e SSO
+O card Observabilidade abre um iframe na mesma janela com o dashboard proprio
+`astral-observability` (auditoria, CPU e memoria). A fonte `astral-postgres`
+consulta o banco PostgreSQL do Astral, `astral` por padrao, usando uma role de
+leitura exclusiva. O dashboard, datasource e dados do BI do ERP sao preservados;
+o datasource do Astral nunca e marcado como default.
 
-O Astral agora e cliente OIDC do auth-service, usando authorization code,
-validacao de assinatura RSA, issuer, state e nonce pelo Spring Security.
-O login ocorre por redirecionamento do navegador ao provedor: essa e a etapa
-que estabelece a sessao central. Autenticar apenas no formulario local do
-Astral nao cria essa sessao e nao equivale a SSO.
+## Reutilizar o Grafana
 
-Com SSO habilitado, a entrada normal do Astral redireciona ao Auth Service;
-se ja houver sessao central (inclusive iniciada por outro cliente OAuth), ela
-sera reutilizada. Ao abrir a observabilidade, o Grafana faz seu proprio fluxo
-OAuth e reutiliza a mesma sessao central, sem pedir novamente usuario/senha.
-Cada aplicativo mantem seu proprio cookie; senhas e tokens nao sao passados ao
-iframe. Grupos do provedor continuam disponiveis ao ACL; apenas o grupo
-configurado em `astral.auth.ad.admin-group` concede administracao do Astral.
+1. Implante/reinicie Astral para aplicar a migracao V101 de auditoria.
+2. Forneca `ASTRAL_GRAFANA_URL` com a **URL publica ja usada pelo BI**, incluindo
+   seu prefixo atual (ex.: `http://192.168.2.10:3000/grafana`). Nao altere
+   `root_url`, issuer nem callback do Grafana para acomodar o Astral.
+3. Forneca `ASTRAL_GRAFANA_SERVICE_TOKEN` de uma service account com permissao
+   para provisionar datasource e dashboard na organizacao correta. Esse token
+   e usado apenas pelo script, nunca pelo navegador. Execute no host PostgreSQL:
+   `sudo --preserve-env=ASTRAL_GRAFANA_URL,ASTRAL_GRAFANA_SERVICE_TOKEN bash scripts/install-grafana.sh`.
+   Para outro banco, preserve tambem `ASTRAL_DB_NAME`.
+4. Configure no ambiente **do Astral** `ASTRAL_GRAFANA_DASHBOARD_URL` com a URL
+   que o script informou, terminando em `/d/astral-observability`, e reinicie
+   somente Astral. O navegador precisa alcancar essa URL; um portal HTTPS exige
+   Grafana tambem publicado por HTTPS. Reutilize o acesso publico existente.
 
-O issuer publico deve ser acessivel tanto pelo navegador quanto pelos dois
-backends. Use **mesmo site e mesmo esquema** para Astral e auth-service
-(ex.: `https://astral.srvcloud.cloud` e `https://auth.srvcloud.cloud`), pois o
-fluxo do Grafana ocorre dentro do iframe e depende do cookie do provedor.
-Misturar HTTPS no portal com issuer HTTP, ou usar um provedor em outro site,
-pode bloquear o SSO no iframe pelas regras de cookies do navegador.
-Certificados do issuer precisam ser confiaveis pelos backends.
+O script chama somente APIs de pastas, datasources e dashboards e adiciona uma
+role de leitura no banco Astral. Nao escreve em `/etc/grafana`, nao instala
+pacotes, nao altera systemd do Grafana, nao reinicia Grafana, nao altera OAuth,
+nao troca o banco de metadados e nao modifica recursos do ERP. UIDs conflitantes
+fora dos recursos Astral causam erro. O segredo da role Astral fica root-only
+em `/etc/astral/grafana/reader.env` e e reutilizado nas reexecucoes.
 
-## Configurar o auth-service existente
+Os arquivos `deploy/grafana`, `scripts/bi/instalar_grafana_bi.sh` e o componente
+`GrafanaBiDashboard` do ERP sao a referencia da integracao existente. A main
+consultada ainda descreve LDAP em arquivos antigos; a configuracao OAuth em
+execucao e preservada integralmente, sem tentar deduzi-la ou substitui-la.
 
-O auth-service atual registra um cliente configuravel (`grafana` por padrao).
-A integracao reutiliza esse registro para os dois consumidores; use o mesmo
-client id/secret configurado no auth-service. Preserve os callbacks do ERP e
-acrescente os callbacks do Astral na lista `AUTH_OAUTH2_REDIRECT_URIS`:
+## Login do Astral no auth-service
 
-- `https://astral.srvcloud.cloud/login/oauth2/code/auth-service`
-- `https://astral.srvcloud.cloud/grafana/login/generic_oauth`
+O login OIDC e configurado **somente no Astral**. O script
+`configure-grafana-sso.sh` precisa de `ASTRAL_PUBLIC_URL`, `ASTRAL_SSO_ISSUER`
+e `ASTRAL_SSO_CLIENT_SECRET` (e opcionalmente `ASTRAL_SSO_CLIENT_ID`). Ele cria
+`/etc/astral/sso.env` e um drop-in apenas de `astral-platform.service`.
 
-Mantenha `AUTH_OAUTH2_ENABLED=true` e `AUTH_OAUTH2_ISSUER` igual ao issuer
-publico. O auth-service publica `/oauth2/authorize`, `/oauth2/token`,
-`/oauth2/jwks` e **`/userinfo`**. Nao e necessario mudar seu codigo.
-O login central e feito fora do iframe; a sessao existente permite que o
-Grafana conclua a autorizacao sem exibir o formulario central.
+No registro do cliente do auth-service, preserve os callbacks existentes e
+acrescente somente `https://ORIGEM-DO-ASTRAL/login/oauth2/code/auth-service`.
+O cliente configuravel atual pode ser reutilizado; nenhum callback do Grafana
+precisa mudar. A configuracao usa os endpoints reais `/oauth2/authorize`,
+`/oauth2/token`, `/oauth2/jwks` e `/userinfo`.
 
-## Atualizar o servidor
+Com SSO habilitado, a entrada normal do Astral redireciona ao provedor e cria
+sua sessao central; o Grafana ja configurado reutiliza essa sessao. O formulario
+local do Astral nao cria sessao no provedor e nao equivale a SSO. O login local
+de contingencia continua em `/app/?local=1`. O logout do Astral encerra somente
+sua sessao local. Grupos do provedor preservam o ACL e apenas o grupo admin
+configurado concede administracao do Astral. Cookie `ASTRAL_SESSION` evita
+colisao com a sessao do auth-service.
 
-1. Registre os callbacks acima no auth-service, preservando os do ERP.
-2. Recompile/implante o Astral e reinicie para o Flyway aplicar V101.
-3. Execute o instalador com as variaveis `ASTRAL_PUBLIC_URL`,
-   `ASTRAL_SSO_ISSUER` e `ASTRAL_SSO_CLIENT_SECRET` fornecidas pelo ambiente
-   administrativo (nao as salve no Git):
-   `sudo --preserve-env=ASTRAL_PUBLIC_URL,ASTRAL_SSO_ISSUER,ASTRAL_SSO_CLIENT_ID,ASTRAL_SSO_CLIENT_SECRET bash scripts/install-grafana.sh`.
-   Para outro banco, forneca tambem `ASTRAL_DB_NAME`.
-4. Aplique `sudo bash scripts/configure-nginx.sh` e reinicie
-   `sudo systemctl restart astral-platform grafana-server`.
-5. Entre no Astral pelo endereco publico e abra Observabilidade.
+As regras de embedding/cookies ja estabelecidas no BI tambem precisam aceitar
+a origem do Astral. Use o mesmo site e esquema para o portal, Grafana e issuer
+quando o fluxo OAuth ocorrer no iframe; bloqueios de cookies de terceiros
+podem impedir SSO se eles estiverem em sites diferentes. Nenhuma excecao de
+browser ou mudanca global de autenticacao e aplicada automaticamente.
 
-Para alterar somente SSO, use `scripts/configure-grafana-sso.sh` com as mesmas
-variaveis. Ele configura os dois clientes e gera os drop-ins systemd, sem
-reescrever o arquivo de ambiente principal. Os segredos ficam root-only;
-o instalador reaproveita o arquivo de SSO nas reexecucoes. O login de contingencia
-local continua em `/app/?local=1`; ele nao herda SSO. A saida do Astral encerra
-apenas a sessao local, nao todas as sessoes do provedor e dos outros clientes.
+## Dados
 
-## Dados e permissoes
-
-Usa o **mesmo banco PostgreSQL do Astral** (`astral` por padrao), sem outro
-PostgreSQL ou MongoDB. Os metadados Grafana ficam no schema `grafana`, role
-`astral_grafana`. O datasource usa `astral_grafana_reader`, com SELECT apenas
-nas tabelas de observabilidade. Conexoes locais em 127.0.0.1:5432 exigem senha
-no pg_hba.conf. O instalador gera senha administrativa aleatoria antes de
-iniciar o Grafana; login anonimo e formulario local do Grafana ficam desativados
-quando o SSO e configurado. Papeis do provedor ficam limitados a Viewer/Editor,
-sem conceder administrador global do Grafana.
-
-A auditoria e gravada via JPA em `public.observability_audit_event`, com
-retencao de 30 dias (`ASTRAL_AUDIT_RETENTION_DAYS`), limpeza horaria e fallback
-JSONL em `/var/log/astral/audit-fallback.jsonl` se houver falha. O JSONL nao e
-reimportado automaticamente. Eventos antigos do Graylog nao sao migrados.
-Servicos antigos nao sao interrompidos, pois podem ser compartilhados.
+Auditoria via JPA em `public.observability_audit_event`, com retencao padrao de
+30 dias (`ASTRAL_AUDIT_RETENTION_DAYS`), limpeza horaria e fallback JSONL em
+`/var/log/astral/audit-fallback.jsonl`. Nao reimporta JSONL automaticamente nem
+migra historico Graylog. Os dados Astral continuam no mesmo PostgreSQL do Astral;
+o banco de metadados Grafana existente permanece onde esta.
