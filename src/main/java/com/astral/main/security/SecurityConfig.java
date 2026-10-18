@@ -10,6 +10,9 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
+ @org.springframework.beans.factory.annotation.Value("${astral.sso.enabled:false}") boolean ssoEnabled;
+ private final AstralOidcUserService oidcUsers;
+ public SecurityConfig(AstralOidcUserService oidcUsers){this.oidcUsers=oidcUsers;}
  @Bean AuthenticationManager authenticationManager(MultiSourceAuthenticationProvider provider){return new ProviderManager(provider);}
  @Bean SecurityFilterChain securityFilterChain(HttpSecurity http)throws Exception{
   http.csrf(c->c.disable())
@@ -25,7 +28,7 @@ public class SecurityConfig {
     // outra vez. ESTA lista e a astral.acl.public-paths tem que concordar --
     // uma e' o portao do Spring, a outra e' o que o motor de ACL pergunta.
     // A API continua protegida por anyRequest().authenticated().
-    .requestMatchers("/","/login","/home","/inicio","/app/**","/assets/**","/images/**","/favicon.ico","/api/auth/login","/api/certs/ca/download","/error").permitAll()
+    .requestMatchers("/","/login","/home","/inicio","/app/**","/assets/**","/images/**","/favicon.ico","/api/auth/login","/api/auth/sso","/oauth2/**","/login/oauth2/**","/api/certs/ca/download","/error").permitAll()
     .requestMatchers("/actuator/**").permitAll()
     // O auth_request do Nginx chega aqui sem sessao: o subrequest nao carrega
     // cookie nenhum. Quem responde e o proprio motor, que recusa com 401 quando
@@ -40,6 +43,10 @@ public class SecurityConfig {
     .requestMatchers("/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html").permitAll()
     .anyRequest().authenticated())
    .exceptionHandling(e->e.authenticationEntryPoint((req,res,ex)->res.sendError(401)));
+  if(ssoEnabled) http.oauth2Login(o->o
+   .userInfoEndpoint(u->u.oidcUserService(oidcUsers))
+   .defaultSuccessUrl("/app/",true)
+   .failureUrl("/app/?ssoError=1"));
   return http.build();
  }
 }

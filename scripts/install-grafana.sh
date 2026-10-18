@@ -42,6 +42,10 @@ if [[ ! -f "$SECRETS" ]]; then
 fi
 # Arquivo gerado por este script, apenas root pode alterar.
 source "$SECRETS"
+if [[ -z "${GF_SECURITY_ADMIN_PASSWORD:-}" ]]; then
+    printf 'GF_SECURITY_ADMIN_PASSWORD=%s\n' "$(openssl rand -hex 32)" >> "$SECRETS"
+fi
+chmod 0600 "$SECRETS"
 runuser -u postgres -- psql -X -v ON_ERROR_STOP=1 -d "$DB_NAME" \
     -v metadata_password="$GF_DATABASE_PASSWORD" -v reader_password="$ASTRAL_GRAFANA_READER_PASSWORD" <<'SQL'
 SELECT 'CREATE ROLE astral_grafana LOGIN' WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname='astral_grafana') \gexec
@@ -60,6 +64,10 @@ cat > /etc/systemd/system/grafana-server.service.d/astral.conf <<CFG
 [Service]
 EnvironmentFile=$SECRETS
 Environment=GF_SERVER_HTTP_PORT=3000
+Environment=GF_SECURITY_ALLOW_EMBEDDING=true
+Environment=GF_AUTH_ANONYMOUS_ENABLED=false
+Environment=GF_AUTH_GENERIC_OAUTH_ENABLED=false
+Environment=GF_SERVER_SERVE_FROM_SUB_PATH=true
 Environment=GF_DATABASE_TYPE=postgres
 Environment=GF_DATABASE_HOST=127.0.0.1:5432
 Environment=GF_DATABASE_NAME=$DB_NAME
@@ -71,11 +79,14 @@ install -d -o root -g grafana -m 0750 /etc/grafana/provisioning/datasources /etc
 install -m 0640 -o root -g grafana "$ROOT/observability/grafana/datasource.yaml" /etc/grafana/provisioning/datasources/astral.yaml
 install -m 0640 -o root -g grafana "$ROOT/observability/grafana/provider.yaml" /etc/grafana/provisioning/dashboards/astral.yaml
 install -m 0640 -o root -g grafana "$ROOT/observability/grafana/astral.json" /var/lib/grafana/dashboards/astral.json
+if [[ ! -f /etc/grafana/astral/sso.env ]]; then
+    bash "$ROOT/scripts/configure-grafana-sso.sh"
+fi
 systemctl daemon-reload
 systemctl enable grafana-server
 systemctl restart grafana-server
 for attempt in {1..30}; do
-    if curl -fsS http://127.0.0.1:3000/api/health >/dev/null; then
+    if curl -fsS http://127.0.0.1:3000/grafana/api/health >/dev/null; then
         echo '[OK] Grafana :3000; metadados no schema grafana; datasource somente leitura no mesmo PostgreSQL.'
         exit 0
     fi
