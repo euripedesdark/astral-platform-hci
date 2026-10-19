@@ -20,7 +20,13 @@ rollback.
 Este projeto está sob **GNU AGPL v3**. Ver [`LICENSE.md`](LICENSE.md), e as
 dependências de terceiros em [`NOTICE.md`](NOTICE.md).
 
-📖 **Documentação completa em português:** [`README.pt-BR.md`](docs/i18n/README.pt-BR.md)
+🇧🇷 Este projeto está sob **GNU AGPL v3**. Ver [`LICENSE.md`](LICENSE.md).
+
+🇧🇷 Documentação completa em português: [`README.pt-BR.md`](docs/i18n/README.pt-BR.md)
+
+🇺🇸 This project is under the **GNU AGPL v3**. See [`LICENSE.md`](LICENSE.md).
+
+🇺🇸 Complete documentation in English : [`README.en-US.md`](docs/i18n/README.en-US.md) |
 
 ---
 
