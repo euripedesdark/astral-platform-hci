@@ -1,12 +1,5 @@
 # Apoie o Astral Platform & HCI
-
-Este arquivo reúne os dados para doação do Astral Platform & HCI, uma
-plataforma de infraestrutura hiperconvergente Open Source mantida por um único
-desenvolvedor.
-
-Se este projeto ajudou você, sua empresa ou sua equipe, considere apoiar o
-desenvolvimento. Uma doação de qualquer valor paga servidor, hardware de teste
-e as ferramentas de CI. Ela não compra garantia de prazo em nenhuma issue.
+# Support the Astral Platform & HCI
 
 - [English](#-english) · [Español](#-español) · [Français](#-français)
 
