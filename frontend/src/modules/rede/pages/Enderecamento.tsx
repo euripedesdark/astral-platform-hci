@@ -1,4 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import {Card} from 'primereact/card';
 import {Button} from 'primereact/button';
 import {InputText} from 'primereact/inputtext';
@@ -8,11 +9,6 @@ import {Message} from 'primereact/message';
 import {Tag} from 'primereact/tag';
 import {api} from '../../../shared/services/api';
 
-/**
- * Espelho exato do record {@code com.astral.fabric.network.EnderecamentoRede}.
- * O nome do campo e' o contrato com a API: se divergir, o Jackson ignora o que
- * nao conhece e o servidor aplica um endereco que o operador nao digitou.
- */
 interface InterfaceRede {
     nome: string;
     papel: 'WAN' | 'LAN' | '';
@@ -51,24 +47,8 @@ const vazia = (): InterfaceRede => ({
     nome: '', papel: 'LAN', enderecoCidr: '', gateway: '', servidorDhcp: false, dhcpInicio: '', dhcpFim: ''
 });
 
-/**
- * Formulario de Configuracao de Enderecamento de Rede.
- *
- * <p>Tres botoes com semanticas diferentes, e essa e' a parte importante:
- *
- * <ul>
- *   <li><b>Validar</b> -- POST /validar. Mostra o plano e NADA e' aplicado.</li>
- *   <li><b>Aplicar intenção</b> -- POST /api/v1/network/addressing. Publica a
- *       intencao e devolve um intentId; quem reconcilia e o ReconciliationEngine,
- *       nao esta tela.</li>
- *   <li><b>Limpar</b> -- volta ao estado vazio, sem tocar no servidor.</li>
- * </ul>
- *
- * <p>Nao existe "salvar sem validar": o servidor revalida por cima (422), mas a
- * tela mostra os erros ANTES do operador pagar o custo de um 422. E "Aplicar"
- * pede confirmacao porque e' o botao que pode tirar o host da rede.
- */
 export default function EnderecamentoPage() {
+    const{t}=useTranslation();
     const [estado, setEstado] = useState<EstadoApi | null>(null);
     const [desejo, setDesejo] = useState<EnderecamentoRede | null>(null);
     const [dnsTexto, setDnsTexto] = useState('');
@@ -124,8 +104,6 @@ export default function EnderecamentoPage() {
             });
             setValidacao(r);
         } catch (ex) {
-            // 422 chega como erro com o corpo de erros dentro da mensagem quando
-            // a API manda {erros:[...]}; guardamos o que veio para mostrar lista.
             setValidacao({erros: [ex instanceof Error ? ex.message : String(ex)], aprovado: false});
         } finally { setBusy(false); }
     }
@@ -133,10 +111,7 @@ export default function EnderecamentoPage() {
     async function aplicar() {
         const plano = validacao?.plano ?? [];
         const confirmar = window.confirm(
-            'Publicar a intenção de endereçamento?\n\n' +
-            (plano.length ? plano.join('\n') : '(sem mudanças)') +
-            '\n\nUm administrador vai reconciliar este host. Se ele estiver remoto,' +
-            '\numa rede mal configurada pode derrubar o acesso.'
+            t('addressing.confirmApply', { plan: plano.length ? plano.join('\n') : t('addressing.noChangesPlan') })
         );
         if (!confirmar) return;
         setBusy(true); setErro('');
@@ -149,62 +124,62 @@ export default function EnderecamentoPage() {
         finally { setBusy(false); }
     }
 
-    if (!desejo) return <Card title="Endereçamento de Rede"><p className="muted">{erro || 'Carregando…'}</p></Card>;
+    if (!desejo) return <Card title={t('addressing.title')}><p className="muted">{erro || t('addressing.loading')}</p></Card>;
 
     return (
         <div className="grid">
-            <Card title="Desejado (declarativo)" className="col-12">
+            <Card title={t('addressing.desired')} className="col-12">
                 {erro && <Message severity="error" text={erro} style={{display: 'block', marginBottom: 10}} />}
 
                 <div className="flex flex-wrap gap-3 align-items-center" style={{marginBottom: 12}}>
-                    <label className="muted">Método</label>
+                    <label className="muted">{t('addressing.method')}</label>
                     <Dropdown value={desejo.metodo}
-                              options={[{label: 'manual (estático)', value: 'manual'}, {label: 'auto (DHCP)', value: 'auto'}]}
+                              options={[{label: t('addressing.manual'), value: 'manual'}, {label: t('addressing.auto'), value: 'auto'}]}
                               onChange={e => muta(d => ({...d, metodo: e.value}))} style={{width: 200}} />
-                    <label className="muted">Domínio DHCP</label>
-                    <InputText value={desejo.dominioDhcp} placeholder="srvcloud.cloud"
+                    <label className="muted">{t('addressing.dhcpDomain')}</label>
+                    <InputText value={desejo.dominioDhcp} placeholder={t('addressing.emptyInterface.domain')}
                                onChange={e => muta(d => ({...d, dominioDhcp: e.target.value}))} style={{width: 200}} />
                     <label>
                         <Checkbox checked={desejo.protegerResolvConf} inputId="prot"
                                   onChange={e => muta(d => ({...d, protegerResolvConf: !!e.checked}))} />
-                        <span style={{marginLeft: 6}}>proteger /etc/resolv.conf</span>
+                        <span style={{marginLeft: 6}}>{t('addressing.protectResolv')}</span>
                     </label>
                 </div>
 
                 <div className="flex flex-wrap gap-2 align-items-center" style={{marginBottom: 12}}>
-                    <label className="muted" style={{width: 40}}>DNS</label>
+                    <label className="muted" style={{width: 40}}>{t('addressing.dns')}</label>
                     <InputText value={dnsTexto} placeholder="1.1.1.1, 8.8.8.8" style={{minWidth: 320}}
                                onChange={e => { setDnsTexto(e.target.value); setValidacao(null); }} />
-                    <span className="muted">separados por vírgula</span>
+                    <span className="muted">{t('addressing.dnsHint')}</span>
                 </div>
 
-                <h4 style={{margin: '14px 0 8px'}}>Interfaces</h4>
+                <h4 style={{margin: '14px 0 8px'}}>{t('addressing.interfaces')}</h4>
                 <div className="flex flex-wrap gap-2 align-items-center" style={{marginBottom: 6}}>
-                    <span className="muted" style={{width: 90}}>nome</span>
-                    <span className="muted" style={{width: 90}}>papel</span>
-                    <span className="muted" style={{width: 180}}>endereco/máscara</span>
-                    <span className="muted" style={{width: 170}}>gateway</span>
-                    <span className="muted" style={{width: 210}}>DHCP (início – fim)</span>
+                    <span className="muted" style={{width: 90}}>{t('addressing.columns.name')}</span>
+                    <span className="muted" style={{width: 90}}>{t('addressing.columns.role')}</span>
+                    <span className="muted" style={{width: 180}}>{t('addressing.columns.address')}</span>
+                    <span className="muted" style={{width: 170}}>{t('addressing.columns.gateway')}</span>
+                    <span className="muted" style={{width: 210}}>{t('addressing.columns.dhcp')}</span>
                 </div>
 
                 {desejo.interfaces.map((i, idx) => (
                     <div className="flex flex-wrap gap-2 align-items-center" key={idx} style={{marginBottom: 6}}>
-                        <InputText value={i.nome} placeholder="ens192" style={{width: 90}}
+                        <InputText value={i.nome} placeholder={t('addressing.emptyInterface.name')} style={{width: 90}}
                                    onChange={e => mutaInterface(idx, 'nome', e.target.value)} />
                         <Dropdown value={i.papel} options={[{label: 'WAN', value: 'WAN'}, {label: 'LAN', value: 'LAN'}]}
                                   onChange={e => mutaInterface(idx, 'papel', e.value)} style={{width: 90}} />
-                        <InputText value={i.enderecoCidr} placeholder="192.168.2.10/24" style={{width: 180}}
+                        <InputText value={i.enderecoCidr} placeholder={t('addressing.emptyInterface.address')} style={{width: 180}}
                                    onChange={e => mutaInterface(idx, 'enderecoCidr', e.target.value)} />
-                        <InputText value={i.gateway} placeholder="192.168.2.1" style={{width: 170}}
+                        <InputText value={i.gateway} placeholder={t('addressing.emptyInterface.gateway')} style={{width: 170}}
                                    onChange={e => mutaInterface(idx, 'gateway', e.target.value)} />
                         <label className="flex align-items-center" style={{width: 110}}>
                             <Checkbox checked={i.servidorDhcp}
                                       onChange={e => mutaInterface(idx, 'servidorDhcp', !!e.checked)} />
-                            <span style={{marginLeft: 6}}>DHCP</span>
+                            <span style={{marginLeft: 6}}>{t('addressing.dhcp')}</span>
                         </label>
-                        <InputText value={i.dhcpInicio} placeholder="192.168.2.100" style={{width: 130}}
+                        <InputText value={i.dhcpInicio} placeholder={t('addressing.emptyInterface.dhcpStart')} style={{width: 130}}
                                    onChange={e => mutaInterface(idx, 'dhcpInicio', e.target.value)} />
-                        <InputText value={i.dhcpFim} placeholder="192.168.2.200" style={{width: 130}}
+                        <InputText value={i.dhcpFim} placeholder={t('addressing.emptyInterface.dhcpEnd')} style={{width: 130}}
                                    onChange={e => mutaInterface(idx, 'dhcpFim', e.target.value)} />
                         <Button icon="pi pi-trash" severity="danger" text size="small"
                                 onClick={() => muta(d => ({...d, interfaces: d.interfaces.filter((_, k) => k !== idx)}))} />
@@ -212,17 +187,17 @@ export default function EnderecamentoPage() {
                 ))}
 
                 <div className="flex gap-2" style={{marginTop: 10}}>
-                    <Button label="Adicionar interface" icon="pi pi-plus" text size="small"
+                    <Button label={t('addressing.addInterface')} icon="pi pi-plus" text size="small"
                             onClick={() => muta(d => ({...d, interfaces: [...d.interfaces, vazia()]}))} />
-                    <Button label="Limpar" icon="pi pi-eraser" text size="small"
+                    <Button label={t('addressing.clear')} icon="pi pi-eraser" text size="small"
                             onClick={() => { setDesejo({metodo: 'manual', interfaces: [vazia()], dns: [], dominioDhcp: '', protegerResolvConf: true}); setDnsTexto(''); setValidacao(null); }} />
                 </div>
             </Card>
 
             <Card title="Plano" className="col-12">
                 <div className="flex gap-2" style={{marginBottom: 10}}>
-                    <Button label="Validar (nada aplicado)" icon="pi pi-check-circle" onClick={validar} disabled={busy} />
-                    <Button label="Aplicar intenção" icon="pi pi-send" severity="warning" onClick={aplicar}
+                    <Button label={t('addressing.validate')} icon="pi pi-check-circle" onClick={validar} disabled={busy} />
+                    <Button label={t('addressing.apply')} icon="pi pi-send" severity="warning" onClick={aplicar}
                             disabled={busy || !validacao?.aprovado} />
                 </div>
 
@@ -232,25 +207,24 @@ export default function EnderecamentoPage() {
                 {validacao?.aprovado && (
                     <div>
                         {validacao.semMudanca
-                            ? <Tag value="sem mudança — o host já está assim" severity="info" />
+                            ? <Tag value={t('addressing.noChanges')} severity="info" />
                             : <ul style={{margin: 0, paddingLeft: 20}}>
                                 {(validacao.plano || []).map((p, k) => <li key={k}>{p}</li>)}
                               </ul>}
                         <p className="muted" style={{marginTop: 8}}>
-                            Validar custa zero: é a etapa de Validação do ciclo declarativo, com diff
-                            calculado e nada executado. Só <b>Aplicar</b> publica a intenção.
+                            {t('addressing.validateZero')}
                         </p>
                     </div>
                 )}
 
                 {intencao && (
                     <Message severity="success"
-                             text={`intenção ${intencao.intentId} · ${intencao.status} — ${intencao.message ?? ''}`}
+                             text={`${t('addressing.intention')} ${intencao.intentId} · ${intencao.status} — ${intencao.message ?? ''}`}
                              style={{display: 'block', marginTop: 8}} />
                 )}
             </Card>
 
-            <Card title="Observado (o que o sistema tem hoje)" className="col-12">
+            <Card title={t('addressing.observed')} className="col-12">
                 <pre className="muted" style={{whiteSpace: 'pre-wrap', margin: 0, fontSize: 12}}>
                     {JSON.stringify(estado?.observado ?? {}, null, 2)}
                 </pre>

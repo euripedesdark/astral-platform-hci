@@ -1,0 +1,362 @@
+{
+  "app": {
+    "name": "Astral Platform & HCI",
+    "home": "Início",
+    "admin": "ADMIN",
+    "user": "USER",
+    "logout": "Sair",
+    "loading": "Carregando…"
+  },
+  "login": {
+    "title": "ASTRAL PLATFORM",
+    "username": "Login",
+    "password": "Password",
+    "submit": "SIGN IN",
+    "authenticating": "AUTHENTICATING...",
+    "invalidCredentials": "Credenciais inválidas ou erro de rede.",
+    "ssoButton": "Entrar com Auth Service",
+    "ssoNotConfigured": "Login central não configurado.",
+    "ssoUnavailable": "Login central indisponível.",
+    "ssoFailed": "Não foi possível concluir o login central. Tente novamente.",
+    "language": "Idioma"
+  },
+  "nav": {
+    "overview": "Visão geral",
+    "firewall": "Firewall",
+    "acl": "ACL de Navegação",
+    "trafficServer": "Traffic Server",
+    "activeDirectory": "Active Directory",
+    "postgres": "PostgreSQL",
+    "observability": "Observabilidade",
+    "compute": "Computação",
+    "network": "Rede",
+    "addressing": "Endereçamento",
+    "terminal": "Terminal",
+    "certs": "Certificados"
+  },
+  "common": {
+    "loading": "Carregando…",
+    "apply": "Aplicar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "create": "Criar",
+    "register": "Cadastrar",
+    "delete": "Remover",
+    "reload": "Recarregar",
+    "invalidateCache": "Invalidar cache",
+    "error": "Erro",
+    "none": "nenhum"
+  },
+  "overview": {
+    "mods": {
+      "firewall": {
+        "title": "Firewall",
+        "desc": "Regras, NAT, zonas e pânico"
+      },
+      "acl": {
+        "title": "ACL de Navegação",
+        "desc": "Política: categorias, exceções e regras"
+      },
+      "proxy": {
+        "title": "Traffic Server",
+        "desc": "Proxy ATS 3128 + auth AD"
+      },
+      "ad": {
+        "title": "Active Directory",
+        "desc": "Samba AD, LDAPS 636"
+      },
+      "postgres": {
+        "title": "PostgreSQL",
+        "desc": "Banco astral, mTLS"
+      },
+      "observability": {
+        "title": "Observabilidade",
+        "desc": "Grafana + PostgreSQL"
+      },
+      "compute": {
+        "title": "Computação",
+        "desc": "KVM e contêineres OCI"
+      },
+      "network": {
+        "title": "Rede",
+        "desc": "VLANs e tecido"
+      },
+      "addressing": {
+        "title": "Endereçamento",
+        "desc": "IPs fixos, interfaces, gateway e DNS"
+      },
+      "certs": {
+        "title": "Certificados",
+        "desc": "Baixar CA do AD"
+      },
+      "terminal": {
+        "title": "Terminal",
+        "desc": "Acesso SSH"
+      }
+    },
+    "firewallActive": "ATIVO",
+    "rules": "regras"
+  },
+  "firewall": {
+    "title": "FIREWALL",
+    "sections": {
+      "dashboard": "DASHBOARD — VISÃO GERAL",
+      "rules": "REGRAS",
+      "nat": "PORT FORWARDING",
+      "zones": "ZONAS",
+      "groups": "GRUPOS",
+      "protections": "PROTEÇÕES",
+      "logs": "LOGS",
+      "backup": "BACKUP & AUDITORIA"
+    },
+    "navTitle": "MÓDULOS · FIREWALL",
+    "motorActive": "MOTOR ATIVO · iptables",
+    "dashboard": {
+      "blocked24": "BLOQUEADOS (24H)",
+      "rejected": "rejeitados",
+      "allowed24": "PERMITIDOS (24H)",
+      "normalTraffic": "tráfego normal",
+      "activeRules": "REGRAS ATIVAS",
+      "pending": "pendentes",
+      "panic": "PÂNICO",
+      "loading": "Carregando…"
+    },
+    "panic": {
+      "button": "MODO PÂNICO",
+      "subtitle": "bloquear tudo, exceto admin",
+      "confirm": "Bloquear tudo, exceto admin?",
+      "confirmBtn": "Confirmar",
+      "cancel": "Cancelar",
+      "activated": "Pânico ATIVADO"
+    },
+    "rules": {
+      "apply": "Aplicar",
+      "loading": "Carregando…",
+      "newRule": "+ Nova Regra",
+      "port": "Porta",
+      "origin": "Origem",
+      "columns": {
+        "priority": "#",
+        "chain": "CHAIN",
+        "protocol": "PROTO",
+        "port": "PORTA",
+        "src": "ORIGEM",
+        "action": "AÇÃO"
+      }
+    },
+    "forwards": {
+      "title": "PORT FORWARDING",
+      "ext": "Porta ext",
+      "internalIp": "IP interno",
+      "int": "Porta int",
+      "add": "+ Forward",
+      "masquerade": "MASQUERADE",
+      "iface": "IFACE"
+    },
+    "zones": {
+      "title": "REDE",
+      "addZone": "+ Zona",
+      "ipOrNetwork": "IP ou rede",
+      "columns": {
+        "name": "REDE",
+        "trust": "TRUST",
+        "policy": "POLÍTICA"
+      }
+    },
+    "groups": {
+      "hosts": "GRUPOS DE HOSTS",
+      "ports": "Portas vírgula",
+      "name": "Nome",
+      "cidrs": "CIDRs vírgula",
+      "addGroup": "+ Grupo",
+      "columns": {
+        "name": "NOME",
+        "cidrs": "CIDRs",
+        "ports": "PORTAS"
+      }
+    },
+    "protections": {
+      "rateLimit": "RATE LIMIT",
+      "autoBan": "AUTO-BAN",
+      "blocklists": "BLOCKLISTS",
+      "port": "Porta",
+      "rate": "Taxa",
+      "addRateLimit": "+ Rate Limit",
+      "target": "ALVO",
+      "attempts": "TENTATIVAS",
+      "banMin": "BAN MIN",
+      "ipCount": "IPS"
+    },
+    "logs": {
+      "title": "LOGS (tempo real)"
+    },
+    "backup": {
+      "title": "SNAPSHOTS",
+      "revert": "reverter"
+    }
+  },
+  "proxy": {
+    "listen": "0.0.0.0:3128",
+    "auth": "authproxy → 127.0.0.1:8091",
+    "mode": "forward (proxy explícito)",
+    "remap": "não requerido",
+    "flow": "Cliente → ATS 3128 → 8091 valida no AD → origem. Sem credencial: 401."
+  },
+  "acl": {
+    "title": "ACL de Navegação",
+    "engineState": "Estado do motor",
+    "allowed": "permitidas",
+    "denied": "negadas",
+    "noIdentity": "sem identidade",
+    "infraFailures": "falhas de infra",
+    "testDecision": "Testar decisão",
+    "queryEngine": "Consultar motor",
+    "origin": "origem",
+    "noCategory": "sem categoria",
+    "openapiContract": "Contrato OpenAPI 3",
+    "swaggerUi": "swagger-ui",
+    "reload": "Recarregar",
+    "invalidateCache": "Invalidar cache",
+    "cacheInvalidated": "cache e indice de excecoes invalidados",
+    "decision": "A mesma consulta do Nginx: 200 libera, 403 nega, 401 nao ha quem avalie. A coluna origem diz em qual passo a decisao foi tomada.",
+    "domains": "Domínios",
+    "exceptions": "Exceções",
+    "rules": "Regras",
+    "categories": "Categorias",
+    "pattern": "PADRÃO",
+    "category": "CATEGORIA",
+    "originCol": "ORIGEM",
+    "group": "GRUPO",
+    "action": "AÇÃO",
+    "reason": "MOTIVO",
+    "who": "QUEM",
+    "priority": "PRIOR.",
+    "justification": "JUSTIFICATIVA",
+    "default": {
+      "byCategory": "NEGADO",
+      "allowed": "LIBERADO"
+    },
+    "register": "Cadastrar",
+    "createException": "Criar exceção",
+    "createRule": "Criar regra",
+    "exceptionCreated": "excecao criada (PASSO A passa a valer na proxima requisicao)",
+    "ruleCreated": "regra criada",
+    "domainRegistered": "dominio cadastrado",
+    "removed": "removido",
+    "noDomains": "nenhum dominio cadastrado",
+    "noExceptions": "nenhuma excecao",
+    "noRules": "nenhuma regra: tudo negado por padrao",
+    "exceptionRunsBefore": "Excecao roda ANTES de tudo (PASSO A). BYPASS pula motor e cache -- e' a chave para destravar um dominio sem esperar TTL.",
+    "ruleOrder": "Menor prioridade primeiro. Par (categoria, grupo) e' unico: duas regras para o mesmo par fariam a ordem de leitura decidir acesso.",
+    "categoryDefault": "Vocabulario semeado na subida (AclSeeder). A coluna PADRAO so' vale quando default-without-rule = BY_CATEGORY; com o default DENY da casa, vale e' a regra.",
+    "openapiNote": "Lido de /v3/api-docs nesta montagem: a mesma especificacao que o swagger-ui serve, e a prova de que a pagina so' usa endpoints que existem.",
+    "placeholder": {
+      "domain": "facebook.com ou *.gov.br",
+      "category": "categoria",
+      "exceptionPattern": "*.srvcloud.cloud",
+      "adGroupEmpty": "grupo do AD (vazio = todo mundo)",
+      "adGroupOrStar": "grupo do AD (ou *)",
+      "reason": "justificativa",
+      "host": "ex.: facebook.com"
+    },
+    "errors": {
+      "patternAndCategory": "informe o padrao e a categoria",
+      "exceptionPattern": "informe o padrao da excecao",
+      "categoryAndGroup": "escolha categoria e grupo"
+    }
+  },
+  "ad": {
+    "session": "Sessão",
+    "protocol": "LDAPS 636",
+    "base": "DC=srvcloud,DC=cloud",
+    "adminGroup": "Domain Admins",
+    "fallback": "PostgreSQL local"
+  },
+  "postgres": {
+    "host": "127.0.0.1:5432",
+    "database": "astral",
+    "role": "astral",
+    "auth": "mTLS verify-ca",
+    "note": "Certificados em /etc/astral/certs."
+  },
+  "observability": {
+    "notConfigured": "Dashboard do Astral ainda não configurado.",
+    "loadError": "Não foi possível carregar o dashboard do Astral.",
+    "loading": "Carregando observabilidade…",
+    "iframeTitle": "Astral — Grafana"
+  },
+  "compute": {
+    "virtualization": "KVM / libvirt",
+    "containers": "OCI",
+    "rule": "mesmas regras de firewall e identidade"
+  },
+  "network": {
+    "activeRules": "Regras ativas",
+    "synced": "sincronizadas do runtime",
+    "model": "VLANs + firewall + NAT",
+    "fabric": "NetworkManager + iptables"
+  },
+  "addressing": {
+    "title": "Endereçamento de Rede",
+    "loading": "Carregando…",
+    "desired": "Desejado (declarativo)",
+    "method": "Método",
+    "manual": "manual (estático)",
+    "auto": "auto (DHCP)",
+    "dhcpDomain": "Domínio DHCP",
+    "protectResolv": "proteger /etc/resolv.conf",
+    "dns": "DNS",
+    "dnsHint": "separados por vírgula",
+    "interfaces": "Interfaces",
+    "columns": {
+      "name": "nome",
+      "role": "papel",
+      "address": "endereco/máscara",
+      "gateway": "gateway",
+      "dhcp": "DHCP (início – fim)"
+    },
+    "roles": {
+      "wan": "WAN",
+      "lan": "LAN"
+    },
+    "dhcp": "DHCP",
+    "addInterface": "Adicionar interface",
+    "clear": "Limpar",
+    "validate": "Validar (nada aplicado)",
+    "apply": "Aplicar intenção",
+    "noChanges": "sem mudança — o host já está assim",
+    "validateZero": "Validar custa zero: é a etapa de Validação do ciclo declarativo, com diff calculado e nada executado. Só Aplicar publica a intenção.",
+    "intention": "intenção",
+    "observed": "Observado (o que o sistema tem hoje)",
+    "confirmApply": "Publicar a intenção de endereçamento?\n\n{{plan}}\n\nUm administrador vai reconciliar este host. Se ele estiver remoto,\numa rede mal configurada pode derrubar o acesso.",
+    "noChangesPlan": "(sem mudanças)",
+    "errors": {
+      "invalid": "erros"
+    },
+    "emptyInterface": {
+      "name": "ens192",
+      "address": "192.168.2.10/24",
+      "gateway": "192.168.2.1",
+      "dhcpStart": "192.168.2.100",
+      "dhcpEnd": "192.168.2.200",
+      "domain": "srvcloud.cloud"
+    }
+  },
+  "terminal": {
+    "title": "Terminal",
+    "noWebBackend": "Sem backend web. Acesso via SSH na 22 com usuário do AD ou local.",
+    "ssh": "ssh euripedes@192.168.2.10"
+  },
+  "certs": {
+    "title": "CA do Active Directory",
+    "note": "Somente superuser do banco. O certificado permite confiar no LDAPS do AD nesta máquina.",
+    "username": "Usuário (ex: postgres)",
+    "password": "Senha",
+    "download": "Baixar certificado",
+    "verifying": "Verificando...",
+    "downloaded": "Certificado baixado. Instale como CA confiável para acessar o AD via LDAPS.",
+    "invalidCredentials": "Credenciais inválidas.",
+    "caNotIssued": "CA ainda não emitida neste servidor.",
+    "failure": "Falha"
+  }
+}
