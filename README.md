@@ -1,5 +1,12 @@
 # Astral Platform HCI
 
+<p align="center">
+  <a href="README.pt-BR.md"><b>🇧🇷 Português (Brasil)</b></a> &bull;
+  <a href="README.en-US.md">🇺🇸 English</a> &bull;
+  <a href="README.es-ES.md">🇪🇸 Español</a> &bull;
+  <a href="README.fr-FR.md">🇫🇷 Français</a>
+</p>
+
 ![Licença](https://img.shields.io/badge/License-AGPLv3-blue.svg)
 ![Java](https://img.shields.io/badge/Java-25-orange.svg)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-brightgreen.svg)
@@ -28,13 +35,22 @@ O **Astral Platform HCI** atua como o portal inicial e hub de identidade do ecos
 
 ---
 
-## 🔐 Autenticação Centralizada
+## 🔐 Política Unificada de Acesso e Autenticação
 
-O portal integra nativamente:
-- **Active Directory / LDAP**: Validação corporativa segura via LDAPS (porta 636) contra o controlador Samba AD.
-- **PostgreSQL Nativo**: Autenticação de contas técnicas administrativas.
-- **PAM / Host Linux**: Suporte a administradores locais do sistema operacional.
-- **SSO OIDC / OAuth2**: Integração com o Astral Auth Service (`:8181`).
+Como hub central de acesso e Single Sign-On (SSO) do ecossistema, o **Astral Platform HCI** orquestra e valida a política unificada de 4 vias:
+
+1. **OAuth2 / Samba Active Directory / Postgres**:
+   - Autenticação federada orquestrada via `astral-auth-service` (`http://127.0.0.1:8181`) conectando ao Samba 4 AD DC via LDAPS (porta 636) para mapeamento de grupos corporativos (`Domain Admins`, etc.).
+2. **Via `auth-service` (SSO)**:
+   - Emissão e validação de tokens JWT Bearer e cookies de sessão (`sso_token` e `astral_token`) assinados com o segredo compartilhado (`AUTH_TOKEN_SECRET` em `/etc/auth-service/auth.env`), permitindo transição contínua entre os módulos sem repetição de login.
+3. **Usuário Local Linux (`root` ou `sudo`)**:
+   - Validação direta no host Linux (PAM/shadow) para contas com UID 0 (`root`) ou participantes dos grupos administrativos `wheel` ou `sudo`.
+4. **Superusuário PostgreSQL**:
+   - Acesso irrestrito ao hub e ferramentas para qualquer conta local PostgreSQL com privilégio `rolsuper = true` (ex: `postgres`).
+
+### 📌 Escopos Preservados & Exceções
+- **Astral SaaS ERP**: Mantém seu modelo de autenticação independente e nativo em Java/Spring (multiempresa, filiais e perfis ERP).
+- **Web IAM do Auth-Service**: Preserva credenciais administrativas diretas para gerenciamento do Active Directory e emissão de certificados TLS.
 
 ---
 
