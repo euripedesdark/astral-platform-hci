@@ -1,15 +1,4 @@
 import OverviewGo from '../modules/overview/pages/Index';
-import Firewall from '../modules/firewall/pages/Index';
-import ProxyPage from '../modules/proxy/pages/Index';
-import AdPage from '../modules/ad/pages/Index';
-import PostgresPage from '../modules/postgres/pages/Index';
-import ObsPage from '../modules/observabilidade/pages/Index';
-import CompPage from '../modules/computacao/pages/Index';
-import RedePage from '../modules/rede/pages/Index';
-import EnderecamentoPage from '../modules/rede/pages/Enderecamento';
-import TermPage from '../modules/terminal/pages/Index';
-import CertsPage from '../modules/certs/pages/Index';
-import AclPage from '../modules/proxy/pages/Acl';
-export const ORDER=['overview','firewall','acl','trafficServer','activeDirectory','postgres','observability','compute','network','addressing','terminal','certs'];
-export const ICONS={'overview':'pi pi-home',firewall:'pi pi-shield',acl:'pi pi-filter',trafficServer:'pi pi-globe',activeDirectory:'pi pi-sitemap',postgres:'pi pi-database',observability:'pi pi-chart-line',compute:'pi pi-server',network:'pi pi-share-alt',addressing:'pi pi-network',terminal:'pi pi-terminal',certs:'pi pi-key'};
-export const PAGES={'overview':OverviewGo,firewall:Firewall,acl:AclPage,trafficServer:ProxyPage,activeDirectory:AdPage,postgres:PostgresPage,observability:ObsPage,compute:CompPage,network:RedePage,addressing:EnderecamentoPage,terminal:TermPage,certs:CertsPage};
+export const ORDER = ['overview'];
+export const ICONS: Record<string, string> = { 'overview': 'pi pi-home' };
+export const PAGES: Record<string, any> = { 'overview': OverviewGo };

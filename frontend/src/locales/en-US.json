@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Astral Platform & HCI",
+    "name": "Astral Platform HCI",
     "home": "Home",
     "admin": "ADMIN",
     "user": "USER",
@@ -8,7 +8,7 @@
     "loading": "Loading…"
   },
   "login": {
-    "title": "ASTRAL PLATFORM",
+    "title": "ASTRAL PLATFORM HCI",
     "username": "Login",
     "password": "Password",
     "submit": "SIGN IN",

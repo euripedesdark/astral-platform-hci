@@ -1,231 +1,77 @@
-# Astral Platform & HCI
+# Astral Platform HCI
 
-![Build](https://github.com/euripedesdark/astral-plataform-hci/actions/workflows/build.yml/badge.svg)
 ![Licença](https://img.shields.io/badge/License-AGPLv3-blue.svg)
-![Java](https://img.shields.io/badge/Java-21-orange.svg)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.5-brightgreen.svg)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15%2B-336791.svg)
-![Node](https://img.shields.io/badge/Node.js-20-5FA04E.svg)
+![Java](https://img.shields.io/badge/Java-25-orange.svg)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-brightgreen.svg)
 ![React](https://img.shields.io/badge/React-18-61DAFB.svg)
+![PrimeReact](https://img.shields.io/badge/PrimeReact-10-blueviolet.svg)
 
-**Infraestrutura Hiperconvergente (HCI) aberta** — uma plataforma de rede,
-segurança e identidade orientada por intenções, que trata computação,
-firewall, identidade e DNS como primitivos de infraestrutura de primeira
-classe, e não como serviços auxiliares.
+**Portal Central de Acesso e Hub de Navegação Astral** — Ponto único de entrada, autenticação centralizada e orquestração de acesso para todas as soluções do ecossistema Astral.
 
-Astral unifica VMs e contêineres em um único tecido convergente, governado por
-um plano de controle auditável, com intenções explícitas, aprovação humana e
-rollback.
-
-Este projeto está sob **GNU AGPL v3**. Ver [`LICENSE.md`](LICENSE.md), e as
-dependências de terceiros em [`NOTICE.md`](NOTICE.md).
-
-🇧🇷 Este projeto está sob **GNU AGPL v3**. Ver [`LICENSE.md`](LICENSE.md).
-
-🇧🇷 Documentação completa em português: [`README.pt-BR.md`](docs/i18n/README.pt-BR.md)
-
-🇺🇸 This project is under the **GNU AGPL v3**. See [`LICENSE.md`](LICENSE.md).
-
-🇺🇸 Complete documentation in English : [`README.en-US.md`](docs/i18n/README.en-US.md) |
+Este projeto está sob **GNU AGPL v3**. Ver [`LICENSE.md`](LICENSE.md).
 
 ---
 
-## 🌐 Escolha o seu idioma / Choose your language
+## 🎯 Visão Geral e Papel no Ecossistema
 
-| | Idioma | Documentação |
-|---|--------|--------------|
-| 🇧🇷 | **Português (Brasil)** | [README.pt-BR.md](docs/i18n/README.pt-BR.md) |
-| 🇺🇸 | **English** | [README.en-US.md](docs/i18n/README.en-US.md) |
-| 🇪🇸 | **Español** | [README.es-ES.md](docs/i18n/README.es-ES.md) |
-| 🇫🇷 | **Français** | [README.fr-FR.md](docs/i18n/README.fr-FR.md) |
+O **Astral Platform HCI** atua como o portal inicial e hub de identidade do ecossistema. Ele centraliza as credenciais e fornece acesso direto com Single Sign-On (SSO) para os módulos especializados:
 
-🇧🇷 [Português](docs/i18n/README.pt-BR.md) ·
-🇺🇸 [English](docs/i18n/README.en-US.md) ·
-🇪🇸 [Español](docs/i18n/README.es-ES.md) ·
-🇫🇷 [Français](docs/i18n/README.fr-FR.md)
+| Módulo Astral | Papel / Descrição | Porta Padrão |
+|---|---|---|
+| **Astral Internet Security** | Firewall stateful, regras iptables, NAT, Masquerade e modo pânico | `:8084` |
+| **Astral Traffic Guard** | Proxy HTTP/HTTPS, motor de ACL e filtragem de conteúdo web | `:8085` / `:8091` |
+| **Astral DBM** | Gerenciador web de bancos de dados estilo IBConsole/DBeaver | `:8080` (DBM) |
+| **Astral Saas ERP** | Sistema de Gestão Empresarial (ERP) cloud-native e multiempresa | `:8080` |
+| **Astral AD & DNS** | Controlador de domínio Samba 4 AD DC e resolução DNS com fallback | `:389` / `:636` / `:53` |
+| **Astral Network** | Gestão declarativa de interfaces de rede e servidor DHCP | — |
+| **Observabilidade** | Monitoramento de métricas, CPU, memória e auditoria no Grafana | `:3000` |
 
 ---
 
-## 🧭 O problema
+## 🔐 Autenticação Centralizada
 
-Plataformas modernas sofrem com problemas estruturais recorrentes:
+O portal integra nativamente:
+- **Active Directory / LDAP**: Validação corporativa segura via LDAPS (porta 636) contra o controlador Samba AD.
+- **PostgreSQL Nativo**: Autenticação de contas técnicas administrativas.
+- **PAM / Host Linux**: Suporte a administradores locais do sistema operacional.
+- **SSO OIDC / OAuth2**: Integração com o Astral Auth Service (`:8181`).
 
-- **Complexidade artificial** introduzida por produtos em camadas
-- **Lock-in de fornecedores** disfarçado de "recursos corporativos"
-- **Certificações caras** usadas como barreiras operacionais
-- **Planos de controle opacos** e frágeis
+---
 
-Rede, firewall, identidade e computação são tratados como silos separados, o
-que aumenta o risco operacional e a carga cognitiva. Astral resolve isso
-colapsando os silos em um único plano de controle autoritativo e observável.
+## 🏗️ Estrutura do Projeto
 
-## 💡 Filosofia de design
-
-Princípios inegociáveis:
-
-- **Determinismo** sobre mágica
-- **Auditabilidade** sobre conveniência
-- **Fallback** sobre dependência
-- **Autoridade humana** sobre automação
-
-## 🏗 Arquitetura
-
-```mermaid
-flowchart TB
-  subgraph ControlPlane [Plano de Controle Astral]
-    CP_API["API · RBAC · Auditoria · Aprovações · InstallerProxy (Spring Boot)"]
-  end
-
-  subgraph Reconciler [Motor de Reconciliação]
-    RE["Backend padrão (Spring Boot)<br/>Intenções · Estado Desejado · Validação · Diff · Aplicar · Rollback"]
-  end
-
-  subgraph Fabric [Tecido Convergente]
-    CF["Rede · Firewall · Proxy (ATS) · Identidade · DNS"]
-  end
-
-  subgraph Runtime [Runtime de VMs e Contêineres]
-    RT["KVM / libvirt · Contêineres OCI"]
-  end
-
-  ControlPlane --> Reconciler
-  Reconciler --> Fabric
-  Fabric --> Runtime
+```
+astral-platform-hci/
+├── pom.xml                                   # Configuração Maven (Java 25 + Spring Boot 4.1.1)
+├── src/main/java/com/astral/main/            # Backend do Portal
+│   ├── controller/                           # HomeController, LoginController, SpaForwardController
+│   ├── security/                             # SecurityConfig, MultiSourceAuthenticationProvider, OIDC
+│   └── AstralApplication.java                # Ponto de entrada da aplicação
+├── src/main/resources/                       # Configurações application.yml e assets estáticos
+└── frontend/                                 # Interface React + Vite + PrimeReact
+    ├── src/modules/Login.tsx                 # Tela de Login com suporte a credenciais e SSO
+    ├── src/modules/overview/                 # Hub Central com cards de acesso aos módulos
+    └── src/App.tsx                           # Shell principal da aplicação
 ```
 
-## 🔐 Segurança e identidade
+---
 
-A autenticação é **multiorigem**: PostgreSQL e Active Directory, combinadas
-por `MultiSourceAuthenticationProvider`. O Apache Traffic Server delega a
-autenticação ao Astral por meio do módulo `authproxy.so`.
+## 🚀 Execução e Build
 
-- **Sessão por cookie** `HttpOnly` + `SameSite=Lax`, com `Secure` ativado por
-  `ASTRAL_COOKIE_SECURE` quando há TLS na frente
-- **Kerberos/LDAP** contra o Samba AD DC, com segredos apenas em disco
-  (`auth.env`, fora do versionamento)
-- **RBAC e trilha de auditoria** no plano de controle
-- **`ddl-auto=validate` + Flyway**: a migração versionada mora em
-  `src/main/resources/db/migration/`; `validate` faz a subida falhar se o banco
-  não bater com o Java
+### Requisitos
+- JDK 25
+- Maven 3.9+
+- Node.js 20+
 
-> ℹ A UI e o motor de ACL usam **sessão stateful** no servidor, com cookie
-> `HttpOnly`. O `/api/v1/acl/check` **aceita** um Bearer JWT HS256 do BrasilCloud
-> Auth Service, mas a validação está **desligada por padrão**
-> (`ASTRAL_AUTH_JWT_ENABLED=false`): o Auth Service ainda não emite token, então
-> o caminho que funciona é a sessão. Contrato completo em
-> [docs/GUIA-INTEGRACAO-AUTH-SERVICE.md](docs/GUIA-INTEGRACAO-AUTH-SERVICE.md).
-> Ver também a seção *Security Measures* no README do seu idioma.
-
-## ⚠️ Degradação segura
-
-Astral falha sem se tornar um problema novo:
-
-| Falha | Comportamento |
-|---|---|
-| API indisponível | Nenhuma mudança é aplicada; o runtime continua |
-| Motor de reconciliação parado | O último estado commitado permanece |
-| Banco indisponível | Configuração congelada; workloads continuam |
-| Sistemas externos indisponíveis | Apenas as sugestões são desativadas |
-
-A operação manual sempre permanece possível.
-
-## 🗂 Estrutura do repositório
-
-```mermaid
-graph LR
-  A["astral-plataform-hci/"] --> B["src/main/java/com/astral/"]
-  A --> C["frontend/"]
-  A --> D["fabric/"]
-  A --> E["scripts/"]
-  A --> F["etc/astral/"]
-
-  B --> B1["main/ — plano de controle<br/>controller · security · model"]
-  B --> B2["fabric/ — firewall · network · proxy<br/>reconciliation"]
-  B --> B3["tools/ — Installer · InstallerFirewall<br/>InstallerProxy · NetworkConfig"]
-  C --> C1["Vite + React 18 + PrimeReact<br/>+ legacy/"]
-  D --> D1["DNS (Pi-hole) · firewall (8040)<br/>network-firewall · samba-ad-dc<br/>acess-report-system (Flask)"]
-  E --> E1["instaladores e verificadores bash"]
-  F --> F1["ad.properties"]
+### Compilação do Frontend
+```bash
+cd frontend
+npm install
+npm run build
 ```
 
-## 📅 Status do projeto
-
-Em desenvolvimento inicial. [`projectupdates.md`](projectupdates.md) é o
-documento vivo com a linha do tempo, o rationale e as decisões de projeto.
-
-| Módulo | Estado |
-|---|---|
-| Plano de controle (API, RBAC, auditoria, aprovações) | 🟡 Em desenvolvimento |
-| Autenticação multiorigem (AD + PostgreSQL) | 🟢 Funcionando |
-| DNS com Pi-hole | 🟢 Funcionando |
-| Samba AD DC multi-distro | 🟢 Funcionando |
-| Firewall e proxy ATS | 🟢 Funcionando |
-| Motor de reconciliação (Intent → Validação → Diff → Commit → Rollback) | 🟡 Implementado, em integração |
-| Migração do firewall para dentro da plataforma (sai o app de 8040) | 🟡 Em andamento |
-| Frontend PrimeReact | 🟡 Em desenvolvimento |
-| Computação (KVM/libvirt) | 🟡 Base instalada; módulo em construção |
-| Replicação de armazenamento (DRBD) | 🔴 Planejado — ainda não implementado |
-
----
-
-## ❤️ Apoie o Projeto
-
-Astral Platform & HCI é uma plataforma de infraestrutura livre, mantida por um
-único desenvolvedor.
-
-Se este projeto ajudou você, sua empresa ou sua equipe, considere apoiar o
-desenvolvimento.
-
-**PIX:** `24adc62c-b073-4587-974d-03fe35f6733f`
-
-### 💳 Transferência internacional (Wise)
-
-A chave PIX não funciona fora do Brasil.
-
-**Se você envia de um banco dos Estados Unidos**, use estes dados para uma
-transferência doméstica; **de qualquer outro lugar**, faça uma transferência
-internacional Swift.
-
-| | |
-|---|---|
-| **Nome** | Euripedes Batista de Paiva Junior |
-| **Tipo de conta** | Checking |
-| **Routing number** (wire e ACH) | `101019628` |
-| **Número da conta** | `215822927677` |
-| **Nome e endereço do banco** | Wise US Inc, 108 W 13th St, Wilmington, DE, 19801, United States |
-| **SWIFT/BIC** | `TRWIUS35XXX` |
-
-Os dados completos, com as instruções em quatro idiomas, estão nos READMEs:
-
-🇧🇷 [`README.pt-BR.md`](docs/i18n/README.pt-BR.md) · 🇺🇸 [`README.en-US.md`](docs/i18n/README.en-US.md) ·
-🇪🇸 [`README.es-ES.md`](docs/i18n/README.es-ES.md) · 🇫🇷 [`README.fr-FR.md`](docs/i18n/README.fr-FR.md)
-
----
-
-## 🤝 Como contribuir
-
-Leia o guia no seu idioma:
-
-| Idioma | Guia |
-|---|---|
-| 🇧🇷 Português (Brasil) | [CONTRIBUTING.pt-BR.md](docs/i18n/CONTRIBUTING.pt-BR.md) |
-| 🇺🇸 English | [CONTRIBUTING.en-US.md](docs/i18n/CONTRIBUTING.en-US.md) |
-| 🇪🇸 Español | [CONTRIBUTING.es-ES.md](docs/i18n/CONTRIBUTING.es-ES.md) |
-| 🇫🇷 Français | [CONTRIBUTING.fr-FR.md](docs/i18n/CONTRIBUTING.fr-FR.md) |
-
-## 📄 Licença
-
-**GNU Affero General Public License v3.0 (AGPLv3).** O texto completo e
-inalterado está em [`LICENSE.md`](LICENSE.md).
-
-A AGPLv3 exige que o código-fonte seja oferecido a quem usa o programa, inclusive
-quando o uso é **pela rede** — por isso o "Affero". Para um plano de controle
-acessado por navegador, essa cláusula é justamente a que importa: quem aponta o
-navegador para este sistema tem direito ao código.
-
-Dependências de terceiros são instaladas pelo sistema operacional ou
-resolvidas em build, e **conservam suas próprias licenças**. A seção
-*Serviços separados* do [`NOTICE.md`](NOTICE.md) lista o que não é AGPLv3 — em
-particular o servidor Graylog, que é SSPL e não é redistribuído aqui.
-
-© 2026 Astral Platform & HCI — **Criado por: Euripedes Batista de Paiva Junior**
+### Compilação e Empacotamento do Jar
+```bash
+mvn clean package -DskipTests
+```
+O artefato final é gerado em `target/astral-platform-hci-1.4.0.jar`.

@@ -1,4 +1,3 @@
-```
 # Python
 __pycache__/
 *.pyc
@@ -42,7 +41,6 @@ htmlcov/
 build/
 dist/
 *.egg-info/
-```
 # Java / Maven
 target/
 *.jar
