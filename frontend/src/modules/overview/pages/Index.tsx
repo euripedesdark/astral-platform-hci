@@ -49,9 +49,18 @@ export const ASTRAL_MODULES: AstralModule[] = [
     title: 'Astral Saas ERP',
     subtitle: 'Gestão Empresarial Integrada',
     desc: 'ERP completo multiempresa, fiscal, financeiro, suprimentos, vendas e serviços.',
-    img: '/images/web_server_admin.png',
+    img: '/images/astral_saas_erp.png',
     url: '/erp/',
     badge: 'ERP'
+  },
+  {
+    id: 'webserver',
+    title: 'Astral Web Server',
+    subtitle: 'Nginx & Apache Tomcat Admin',
+    desc: 'Administração centralizada de servidores web, Virtual Hosts, proxy reverso, certificados SSL e aplicações Tomcat.',
+    img: '/images/web_server_admin.png',
+    url: '/webserver/',
+    badge: 'Web Server'
   },
   {
     id: 'ad-dns',
