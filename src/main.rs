@@ -5,7 +5,7 @@ mod server;
 mod service;
 
 use config::AppConfig;
-use controller::{AclController, AuthController, PlatformController};
+use controller::{AclController, AuthController, PlatformController, TerminalController};
 use domain::AuthSource;
 use server::ApplicationServer;
 use service::{
@@ -81,12 +81,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let platform_controller = Arc::new(PlatformController::new(config.static_dir().to_path_buf()));
 
+    let terminal_controller = Arc::new(TerminalController::new(token_service.clone()));
+
     // 5. Application Server
     let server = ApplicationServer::new(
         config,
         auth_controller,
         acl_controller,
         platform_controller,
+        terminal_controller,
     );
 
     server.run().await

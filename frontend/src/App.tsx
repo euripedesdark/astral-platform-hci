@@ -67,7 +67,7 @@ function App() {
         </div>
       </header>
       <h1 className="hometitle">PORTAL DE ACESSO</h1>
-      <OverviewGo/>
+      <OverviewGo user={user}/>
     </div>
   );
 }

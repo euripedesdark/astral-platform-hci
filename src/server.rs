@@ -1,5 +1,8 @@
 use crate::config::AppConfig;
-use crate::controller::{AclController, AuthController, LoginPayload, PlatformController};
+use crate::controller::{
+    AclController, AuthController, LoginPayload, PlatformController, TerminalController,
+    TerminalExecPayload,
+};
 use axum::{
     extract::{Json, State},
     http::{HeaderMap, Uri},
@@ -20,6 +23,7 @@ pub struct ApplicationContainer {
     pub auth_controller: Arc<AuthController>,
     pub acl_controller: Arc<AclController>,
     pub platform_controller: Arc<PlatformController>,
+    pub terminal_controller: Arc<TerminalController>,
 }
 
 pub struct ApplicationServer {
@@ -32,6 +36,7 @@ impl ApplicationServer {
         auth_controller: Arc<AuthController>,
         acl_controller: Arc<AclController>,
         platform_controller: Arc<PlatformController>,
+        terminal_controller: Arc<TerminalController>,
     ) -> Self {
         Self {
             container: ApplicationContainer {
@@ -39,6 +44,7 @@ impl ApplicationServer {
                 auth_controller,
                 acl_controller,
                 platform_controller,
+                terminal_controller,
             },
         }
     }
@@ -85,6 +91,19 @@ impl ApplicationServer {
                 "/api/auth/sso",
                 get(|State(c): State<ApplicationContainer>| async move {
                     c.auth_controller.handle_sso()
+                }),
+            )
+            // Terminal endpoints
+            .route(
+                "/api/terminal/status",
+                get(|State(c): State<ApplicationContainer>, headers: HeaderMap| async move {
+                    c.terminal_controller.handle_status(&headers)
+                }),
+            )
+            .route(
+                "/api/terminal/exec",
+                post(|State(c): State<ApplicationContainer>, headers: HeaderMap, Json(body): Json<TerminalExecPayload>| async move {
+                    c.terminal_controller.handle_exec(headers, body).await
                 }),
             )
             // ACL endpoint
