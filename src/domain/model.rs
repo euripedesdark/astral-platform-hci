@@ -5,6 +5,8 @@ pub enum AuthSource {
     ActiveDirectory,
     Postgres,
     Linux,
+    Certificate,
+    OAuth2,
 }
 
 impl AuthSource {
@@ -13,6 +15,8 @@ impl AuthSource {
             Self::ActiveDirectory => "AD",
             Self::Postgres => "POSTGRES",
             Self::Linux => "LINUX",
+            Self::Certificate => "CERTIFICATE",
+            Self::OAuth2 => "OAuth2",
         }
     }
 
@@ -20,6 +24,8 @@ impl AuthSource {
         match s.trim().to_uppercase().as_str() {
             "POSTGRES" => Self::Postgres,
             "LINUX" => Self::Linux,
+            "CERTIFICATE" => Self::Certificate,
+            "OAUTH2" => Self::OAuth2,
             _ => Self::ActiveDirectory,
         }
     }
