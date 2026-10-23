@@ -8,10 +8,10 @@ import frFR from './locales/fr-FR.json';
 
 export const LANGUAGE_STORAGE_KEY = 'astral_language';
 export const supportedLanguages = [
-    { code: 'pt-BR', label: 'Português' },
-    { code: 'en-US', label: 'English' },
-    { code: 'es-ES', label: 'Español' },
-    { code: 'fr-FR', label: 'Français' }
+    { code: 'pt-BR', label: '🇧🇷 Português' },
+    { code: 'en-US', label: '🇺🇸 English' },
+    { code: 'es-ES', label: '🇪🇸 Español' },
+    { code: 'fr-FR', label: '🇫🇷 Français' }
 ];
 
 void i18n

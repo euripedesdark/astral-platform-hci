@@ -31,6 +31,7 @@ dependencies = [
  "http",
  "jsonwebtoken",
  "ldap3",
+ "openssl",
  "regex",
  "serde",
  "serde_json",

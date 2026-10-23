@@ -1,4 +1,5 @@
 use crate::config::AppConfig;
+use crate::controller::auth_controller::VerifyManualCertPayload;
 use crate::controller::{
     AclController, AuthController, LoginPayload, PlatformController, TerminalController,
     TerminalExecPayload,
@@ -91,6 +92,28 @@ impl ApplicationServer {
                 "/api/auth/sso",
                 get(|State(c): State<ApplicationContainer>| async move {
                     c.auth_controller.handle_sso()
+                }),
+            )
+            // Cert Auth endpoints
+            .route(
+                "/api/auth/cert/challenge",
+                get(|State(c): State<ApplicationContainer>| async move {
+                    c.auth_controller.handle_cert_challenge().await
+                }),
+            )
+            .route(
+                "/api/auth/cert/verify-manual",
+                post(|State(c): State<ApplicationContainer>, Json(body): Json<VerifyManualCertPayload>| async move {
+                    c.auth_controller.handle_cert_verify_manual(body).await
+                }),
+            )
+            .route(
+                "/api/auth/cert/browser",
+                post(|State(c): State<ApplicationContainer>, headers: HeaderMap| async move {
+                    c.auth_controller.handle_cert_browser(&headers)
+                })
+                .get(|State(c): State<ApplicationContainer>, headers: HeaderMap| async move {
+                    c.auth_controller.handle_cert_browser(&headers)
                 }),
             )
             // Terminal endpoints

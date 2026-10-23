@@ -59,7 +59,7 @@ export const ASTRAL_MODULES: AstralModule[] = [
     subtitle: 'Samba AD DC & DNS Híbrido',
     desc: 'Controlador de domínio corporativo Samba 4, autenticação Kerberos/LDAP e resolução DNS.',
     img: '/images/domain_controllers.png',
-    url: '/ad-dns/',
+    url: '/ad/',
     badge: 'Identidade'
   },
   {

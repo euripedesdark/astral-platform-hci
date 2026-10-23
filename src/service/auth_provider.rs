@@ -225,7 +225,7 @@ impl AuthenticationProvider for MultiSourceAuthProvider {
         match source {
             AuthSource::Postgres => self.pg_provider.authenticate(credentials).await,
             AuthSource::Linux => self.linux_provider.authenticate(credentials).await,
-            AuthSource::ActiveDirectory => self.ad_provider.authenticate(credentials).await,
+            AuthSource::ActiveDirectory | AuthSource::Certificate | AuthSource::OAuth2 => self.ad_provider.authenticate(credentials).await,
         }
     }
 }
