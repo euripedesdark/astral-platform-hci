@@ -172,8 +172,8 @@ impl ApplicationServer {
             .nest_service("/app/images", ServeDir::new(app_images.clone()))
             .nest_service("/app/fonts", ServeDir::new(app_fonts.clone()))
             .nest_service("/assets", ServeDir::new(app_assets))
-            .nest_service("/images", ServeDir::new(global_images))
-            .nest_service("/fonts", ServeDir::new(global_fonts))
+            .nest_service("/images", ServeDir::new(app_images).fallback(ServeDir::new(global_images)))
+            .nest_service("/fonts", ServeDir::new(app_fonts).fallback(ServeDir::new(global_fonts)))
             .nest_service("/css", ServeDir::new(global_css))
             .nest_service("/js", ServeDir::new(global_js))
             // SPA Subroute & global fallbacks

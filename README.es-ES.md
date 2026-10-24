@@ -1,5 +1,7 @@
 # Astral Platform HCI
 
+> Current backend: Rust/Axum + React/Vite. Use [the current deployment guide](docs/deploy-platform.md) and `python3 deploy_platform.py --install-deps`. Java/Maven instructions below describe the legacy implementation. Service: `astral-platform-hci.service`.
+
 <p align="center">
   <a href="README.pt-BR.md"><b>🇧🇷 Português (Brasil)</b></a> &bull;
   <a href="README.en-US.md">🇺🇸 English</a> &bull;

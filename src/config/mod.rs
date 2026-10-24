@@ -32,7 +32,7 @@ impl AppConfig {
             .unwrap_or(8082);
 
         let server_address = std::env::var("SERVER_ADDRESS")
-            .unwrap_or_else(|_| "0.0.0.0".to_string());
+            .unwrap_or_else(|_| "127.0.0.1".to_string());
 
         let user = std::env::var("ASTRAL_DB_USER").unwrap_or_else(|_| "astral".to_string());
         let password = std::env::var("ASTRAL_DB_PASSWORD").unwrap_or_else(|_| "205831nLNeN4Q6A32rN2W57g".to_string());
@@ -79,13 +79,12 @@ impl AppConfig {
             PathBuf::from("./src/main/resources/static"),
         ];
 
-        let mut static_dir = PathBuf::from("/opt/astral-platform/static");
-        for candidate in &candidates {
-            if candidate.join("app").exists() || candidate.join("app/index.html").exists() {
-                static_dir = candidate.clone();
-                break;
-            }
-        }
+        let static_dir = std::env::var_os("ASTRAL_STATIC_DIR")
+            .map(PathBuf::from)
+            .unwrap_or_else(|| candidates.iter()
+                .find(|candidate| candidate.join("app/index.html").is_file())
+                .cloned()
+                .unwrap_or_else(|| PathBuf::from("./src/main/resources/static")));
 
         info!("AppConfig initialized: port={}, host={}, ad_url={}, static_dir={:?}",
             server_port, host, ad_url, static_dir);

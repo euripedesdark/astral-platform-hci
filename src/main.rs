@@ -29,6 +29,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 1. Configuration
     let config = Arc::new(AppConfig::load());
 
+    if !config.static_dir().join("app/index.html").is_file() {
+        return Err(std::io::Error::new(std::io::ErrorKind::NotFound,
+            "Frontend ausente: execute python3 deploy_platform.py ou npm run build em frontend; confira ASTRAL_STATIC_DIR").into());
+    }
+
     // 2. Routing & Authentication Providers (Polymorphic Dependency Injection)
     let auth_router = Arc::new(DatabaseAuthRouter::new(config.pg_conn_str()));
 
