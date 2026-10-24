@@ -14,7 +14,8 @@ import sys
 import time
 import tempfile
 import platform
-from urllib.request import urlopen
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parent
 APP = Path('/opt/astral-platform-hci')
@@ -93,6 +94,17 @@ def verify(base, index=None):
     with urlopen(base + '/health', timeout=3) as response:
         if json.load(response).get('status') != 'UP':
             raise RuntimeError('Health diferente de UP')
+    # nginx may apply auth_request to the OAuth start location as well.
+    # A working direct callback is insufficient if the ACL blocks login first.
+    for path in ('/oauth2/authorization/auth-service', '/login/oauth2/code/auth-service'):
+        request = Request(
+            base + '/api/v1/acl/check', headers={'X-Original-URI': path})
+        try:
+            with urlopen(request, timeout=3) as response:
+                if response.status != 200:
+                    raise RuntimeError('ACL bloqueou rota publica OAuth2: ' + path)
+        except HTTPError as error:
+            raise RuntimeError(f'ACL bloqueou rota publica OAuth2 {path}: HTTP {error.code}') from error
     with urlopen(base + '/app/', timeout=3) as response:
         html = response.read()
         if 'text/html' not in response.headers.get('Content-Type', ''):

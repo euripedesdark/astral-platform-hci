@@ -63,5 +63,8 @@ jobs:
       - name: Build OAuth2 provider
         run: cargo build --release --locked --manifest-path oauth-auth-service/Cargo.toml
 
-      - name: Test real OAuth2 servers against disposable LDAPS
-        run: python3 scripts/test-oauth-e2e.py --auth-binary oauth-auth-service/target/release/astral-auth-service
+      - name: Install nginx for auth_request regression
+        run: sudo apt-get update && sudo apt-get install -y nginx
+
+      - name: Test real OAuth2 servers behind nginx against disposable LDAPS
+        run: python3 scripts/test-oauth-e2e.py --auth-binary oauth-auth-service/target/release/astral-auth-service --nginx-binary /usr/sbin/nginx

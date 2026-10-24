@@ -104,3 +104,16 @@ alteracao no AD real:
 ```bash
 python3 scripts/test-oauth-e2e.py
 ```
+
+## 401 antes da tela do provedor
+
+O nginx pode aplicar `auth_request` ao inicio do OAuth2. A ACL libera os caminhos
+exatos `/oauth2/authorization/auth-service` e `/login/oauth2/code/auth-service`
+mesmo sem cookie. O deploy agora verifica essas duas subrequisicoes antes de
+considerar a release pronta. APIs administrativas continuam exigindo sessao.
+Atualizar com `python3 deploy_platform.py` recompila e troca o backend preservando
+o cadastro OAuth2 existente. Nao e necessario cadastrar novamente ou girar segredos.
+
+O teste `scripts/test-oauth-e2e.py --nginx-binary /usr/sbin/nginx` tambem
+executa o fluxo por um nginx isolado, aplicando `auth_request` ao inicio e
+ao callback, e confere 401 para uma API protegida sem sessao.

@@ -36,6 +36,13 @@ impl DefaultAclService {
     }
 
     pub fn is_public(&self, path: &str) -> bool {
+        // These two routes start/complete authentication and must also work
+        // behind nginx auth_request before a browser has a session cookie.
+        if matches!(path,
+            "/oauth2/authorization/auth-service" |
+            "/login/oauth2/code/auth-service") {
+            return true;
+        }
         if path == "/" || path == "/favicon.ico" {
             return true;
         }
@@ -65,5 +72,25 @@ impl AclService for DefaultAclService {
         }
 
         AclDecision::Unauthorized
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::service::JwtTokenService;
+
+    #[test]
+    fn anonymous_oauth_entry_and_callback_pass_acl_but_other_resources_do_not() {
+        let acl = DefaultAclService::new(Arc::new(JwtTokenService::new("test-signing-key", 900)));
+        for path in ["/oauth2/authorization/auth-service", "/oauth2/authorization/auth-service?continue=1",
+            "/login/oauth2/code/auth-service?code=test&state=test"] {
+            assert!(matches!(acl.evaluate(path, None), AclDecision::Allow), "{path}");
+        }
+        for path in ["/oauth2/authorization/auth-service/admin", "/oauth2/authorization/other-client",
+            "/oauth2/admin", "/api/terminal/exec", "/api/v1/privileges/status"] {
+            assert!(matches!(acl.evaluate(path, None), AclDecision::Unauthorized), "{path}");
+        }
     }
 }
