@@ -54,7 +54,14 @@ impl AuthenticationProvider for LdapAuthProvider {
         let sam = credentials.sam_account_name();
         let bind_dn = credentials.bind_dn(&self.domain);
 
-        let settings = LdapConnSettings::new().set_no_tls_verify(true);
+        let mut settings = LdapConnSettings::new().set_conn_timeout(std::time::Duration::from_secs(5));
+        if let Ok(path) = std::env::var("ASTRAL_AD_CA_FILE") {
+            let pem = std::fs::read(path).map_err(|_| PlatformError::Internal("LDAP CA unreadable".into()))?;
+            let ca = native_tls::Certificate::from_pem(&pem).map_err(|_| PlatformError::Internal("LDAP CA invalid".into()))?;
+            let connector = native_tls::TlsConnector::builder().add_root_certificate(ca).build()
+                .map_err(|_| PlatformError::Internal("LDAP TLS configuration failed".into()))?;
+            settings = settings.set_connector(connector);
+        }
 
         // Try primary URL, then localhost fallback
         let conn_res = match LdapConnAsync::with_settings(settings.clone(), &self.url).await {
@@ -77,9 +84,9 @@ impl AuthenticationProvider for LdapAuthProvider {
             .map_err(|e| {
                 warn!("LDAP bind failed for '{}': {}", bind_dn, e);
                 PlatformError::InvalidCredentials("Usuário ou senha inválidos.".into())
-            })?;
+            })?.success().map_err(|_| PlatformError::InvalidCredentials("Usuario ou senha invalidos.".into()))?;
 
-        let filter = format!("(&(objectClass=user)(sAMAccountName={}))", sam);
+        let filter = format!("(&(objectClass=user)(sAMAccountName={}))", ldap3::ldap_escape(sam));
         let mut authorities = vec![Authority::new("ROLE_ASTRAL_USER")];
         let mut groups = Vec::new();
 

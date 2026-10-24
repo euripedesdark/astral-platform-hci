@@ -38,6 +38,7 @@ pub struct Claims {
 
 pub trait TokenService: Send + Sync {
     fn issue_token(&self, principal: &Principal) -> Result<String, PlatformError>;
+    fn issue_token_with_ttl(&self, principal: &Principal, ttl_seconds: i64) -> Result<String, PlatformError>;
     fn verify_token(&self, token: &str) -> Result<Principal, PlatformError>;
 }
 
@@ -57,28 +58,26 @@ impl JwtTokenService {
 
 impl TokenService for JwtTokenService {
     fn issue_token(&self, principal: &Principal) -> Result<String, PlatformError> {
-        let now = Utc::now().timestamp() as usize;
-        let exp = now + (self.ttl_seconds as usize);
+        self.issue_token_with_ttl(principal, self.ttl_seconds)
+    }
 
-        let is_admin = principal.is_admin()
-            || principal.authorities().iter().any(|a| {
-                let l = a.authority.to_lowercase();
-                l.contains("admin") || l.contains("superuser")
-            })
-            || principal.username().eq_ignore_ascii_case("Administrator")
-            || principal.username() == "root";
+    fn issue_token_with_ttl(&self, principal: &Principal, ttl_seconds: i64) -> Result<String, PlatformError> {
+        let now = Utc::now().timestamp() as usize;
+        let exp = now + ttl_seconds.max(1).min(self.ttl_seconds.max(1)) as usize;
+
+        let is_admin = principal.is_admin();
 
         let has_wheel = if principal.source() == &AuthSource::Postgres {
             false
         } else {
-            is_admin || principal.groups().iter().any(|g| g == "wheel" || g == "sudo")
+            principal.wheel().unwrap_or_else(|| is_admin || principal.groups().iter().any(|g| g == "wheel" || g == "sudo"))
         };
 
         let provider_str = match principal.source() {
             AuthSource::ActiveDirectory => "AD".to_string(),
-            AuthSource::Postgres => "Postgres".to_string(),
-            AuthSource::Linux => "Linux".to_string(),
-            AuthSource::Certificate => "Certificate".to_string(),
+            AuthSource::Postgres => "POSTGRESQL".to_string(),
+            AuthSource::Linux => "LINUX".to_string(),
+            AuthSource::Certificate => "CERTIFICATE".to_string(),
             AuthSource::OAuth2 => "OAuth2".to_string(),
         };
 
@@ -91,7 +90,7 @@ impl TokenService for JwtTokenService {
             exp,
             iat: now,
             iss: "auth-service".to_string(),
-            identity_id: principal.username().to_string(),
+            identity_id: principal.identity_id().to_string(),
             provider: provider_str,
             is_admin,
             has_wheel,
@@ -131,7 +130,7 @@ impl TokenService for JwtTokenService {
                 src,
                 claims.authorities,
                 claims.groups,
-            )
+            ).with_identity_id(claims.identity_id).with_wheel(claims.has_wheel)
         })
         .map_err(|e| {
             warn!("JwtTokenService failed to verify token: {}", e);

@@ -123,6 +123,7 @@ After=network-online.target
 Type=simple
 WorkingDirectory={APP}/current
 EnvironmentFile=-/etc/astral/astral.env
+EnvironmentFile=-/etc/astral/platform-oauth2.env
 EnvironmentFile={RUNTIME}
 ExecStart={APP}/current/bin/astral-platform-hci
 Restart=on-failure
@@ -139,6 +140,7 @@ Alias={LEGACY}
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--install-deps', action='store_true', help='instalar dependencias via dnf/yum (Fedora/RHEL) ou apt-get (Debian/Ubuntu)')
+    parser.add_argument('--prepare-only', action='store_true', help='preparar ferramentas sem parar/implantar servicos')
     parser.add_argument('--port', type=int, default=8082)
     parser.add_argument('--check', action='store_true', help='verificar servico e frontend sem alterar arquivos')
     parser.add_argument('--plan', action='store_true', help='mostrar etapas sem executar')
@@ -191,6 +193,9 @@ def main():
     build(['node', '--version'])
     if not Path('/run/systemd/system').is_dir():
         raise RuntimeError('Este deploy requer Linux com systemd ativo.')
+    if args.prepare_only:
+        print('OK: dependencias preparadas; nenhum servico foi parado.')
+        return
     for filename in ('Cargo.lock', 'frontend/package-lock.json'):
         if not (ROOT / filename).is_file():
             raise RuntimeError(f'Arquivo obrigatorio ausente: {filename}')

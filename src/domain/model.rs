@@ -22,7 +22,7 @@ impl AuthSource {
 
     pub fn from_str(s: &str) -> Self {
         match s.trim().to_uppercase().as_str() {
-            "POSTGRES" => Self::Postgres,
+            "POSTGRES" | "POSTGRESQL" => Self::Postgres,
             "LINUX" => Self::Linux,
             "CERTIFICATE" => Self::Certificate,
             "OAUTH2" => Self::OAuth2,
@@ -45,6 +45,8 @@ impl Authority {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Principal {
     username: String,
+    identity_id: String,
+    wheel: Option<bool>,
     source: AuthSource,
     authorities: Vec<Authority>,
     groups: Vec<String>,
@@ -57,8 +59,11 @@ impl Principal {
         authorities: Vec<Authority>,
         groups: Vec<String>,
     ) -> Self {
+        let username = username.into();
         Self {
-            username: username.into(),
+            identity_id: username.clone(),
+            wheel: None,
+            username,
             source,
             authorities,
             groups,
@@ -68,6 +73,14 @@ impl Principal {
     pub fn username(&self) -> &str {
         &self.username
     }
+
+    pub fn with_identity_id(mut self, identity_id: String) -> Self { self.identity_id = identity_id; self }
+
+    pub fn with_wheel(mut self, allowed: bool) -> Self { self.wheel = Some(allowed); self }
+
+    pub fn wheel(&self) -> Option<bool> { self.wheel }
+
+    pub fn identity_id(&self) -> &str { &self.identity_id }
 
     pub fn source(&self) -> &AuthSource {
         &self.source

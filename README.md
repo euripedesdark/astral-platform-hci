@@ -21,3 +21,11 @@ Servico: `astral-platform-hci.service` (alias `astral-platform.service`).
 
 Os documentos de arquitetura traduzidos abaixo contem referencias historicas a
 Java/Maven. Para instalar a versao atual, use o fluxo Rust acima.
+
+## OAuth2 (HCI + auth-service)
+
+```bash
+python3 configure_oauth2.py --public-url https://192.168.2.10 --install-deps
+```
+
+[Cadastro, implantacao e testes do fluxo OAuth2 completo](docs/oauth2.md).

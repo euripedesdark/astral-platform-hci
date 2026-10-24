@@ -1,4 +1,5 @@
 mod config;
+mod oauth;
 mod controller;
 mod domain;
 mod server;
@@ -75,6 +76,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let acl_service = Arc::new(DefaultAclService::new(token_service.clone()));
 
+    let oauth = Arc::new(oauth::OAuthClient::load(token_service.clone())?);
+
     // 4. Controllers
     let auth_controller = Arc::new(AuthController::new(
         multi_source_provider,
@@ -95,6 +98,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         acl_controller,
         platform_controller,
         terminal_controller,
+        oauth,
     );
 
     server.run().await

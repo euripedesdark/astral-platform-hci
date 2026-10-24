@@ -21,6 +21,7 @@ use tracing::info;
 #[derive(Clone)]
 pub struct ApplicationContainer {
     pub config: Arc<AppConfig>,
+    pub oauth: Arc<crate::oauth::OAuthClient>,
     pub auth_controller: Arc<AuthController>,
     pub acl_controller: Arc<AclController>,
     pub platform_controller: Arc<PlatformController>,
@@ -38,6 +39,7 @@ impl ApplicationServer {
         acl_controller: Arc<AclController>,
         platform_controller: Arc<PlatformController>,
         terminal_controller: Arc<TerminalController>,
+        oauth: Arc<crate::oauth::OAuthClient>,
     ) -> Self {
         Self {
             container: ApplicationContainer {
@@ -46,6 +48,7 @@ impl ApplicationServer {
                 acl_controller,
                 platform_controller,
                 terminal_controller,
+                oauth,
             },
         }
     }
@@ -88,13 +91,6 @@ impl ApplicationServer {
                     c.auth_controller.handle_logout()
                 }),
             )
-            .route(
-                "/api/auth/sso",
-                get(|State(c): State<ApplicationContainer>| async move {
-                    c.auth_controller.handle_sso()
-                }),
-            )
-            // Cert Auth endpoints
             .route(
                 "/api/auth/cert/challenge",
                 get(|State(c): State<ApplicationContainer>| async move {
@@ -189,6 +185,7 @@ impl ApplicationServer {
             .layer(cors)
             .layer(TraceLayer::new_for_http())
             .with_state(self.container.clone())
+            .merge(crate::oauth::router(self.container.oauth.clone()))
     }
 
     pub async fn run(&self) -> Result<(), Box<dyn std::error::Error>> {

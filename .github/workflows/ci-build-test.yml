@@ -28,7 +28,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Test deployment and rollback
-        run: python3 -m unittest discover -s scripts/tests -p test_platform_deploy.py -v
+        run: python3 -m unittest discover -s scripts/tests -p "test_*.py" -v
 
       - name: Cargo check
         run: cargo check --all-targets --locked
@@ -52,3 +52,16 @@ jobs:
 
       - name: Smoke test actual release and frontend
         run: python3 scripts/smoke-platform.py
+
+      - name: Checkout tested auth-service for OAuth2 integration
+        uses: actions/checkout@v4
+        with:
+          repository: euripedesdark/auth-service
+          ref: d5ecf4eb780adfdd901b72a1ae9b8099433b42e1
+          path: oauth-auth-service
+
+      - name: Build OAuth2 provider
+        run: cargo build --release --locked --manifest-path oauth-auth-service/Cargo.toml
+
+      - name: Test real OAuth2 servers against disposable LDAPS
+        run: python3 scripts/test-oauth-e2e.py --auth-binary oauth-auth-service/target/release/astral-auth-service

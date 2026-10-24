@@ -455,10 +455,5 @@ impl AuthController {
         (StatusCode::OK, headers, r#"{"authenticated":false}"#).into_response()
     }
 
-    pub fn handle_sso(&self) -> Json<serde_json::Value> {
-        Json(json!({
-            "enabled": true,
-            "authorizationUrl": "/auth"
-        }))
-    }
+
 }

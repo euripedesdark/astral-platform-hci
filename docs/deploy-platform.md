@@ -80,3 +80,9 @@ Sistemas sem esses gerenciadores recebem diagnostico antes de parar o HCI.
 Nao e necessario instalar apt em Fedora. Na familia RPM, instala `gcc`,
 `gcc-c++`, `make`, `pkgconf-pkg-config` e `openssl-devel`, alem de Node/npm,
 Git e certificados CA. Os repositorios habilitados precisam fornecer Node >=18.
+
+## OAuth2
+
+O fluxo completo esta em [oauth2.md](oauth2.md). O endpoint `/api/auth/sso`
+so habilita o redirecionamento quando os endpoints, segredo e callback estao
+configurados. Usa Authorization Code + PKCE S256, nao `/auth` como pagina de login.

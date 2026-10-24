@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run the actual release on an ephemeral loopback port, without systemd/DB writes."""
 import importlib.util
+import json
 import os
 from pathlib import Path
 import shutil
@@ -46,6 +47,10 @@ def main():
                     with urlopen(f'http://127.0.0.1:{port}' + route, timeout=5) as response:
                         if response.read() != (static / local).read_bytes():
                             raise RuntimeError('Conteudo inesperado: ' + route)
+                with urlopen(f'http://127.0.0.1:{port}/api/auth/sso', timeout=5) as response:
+                    sso = json.load(response)
+                if sso.get('enabled') and sso.get('authorizationUrl') != '/oauth2/authorization/auth-service':
+                    raise RuntimeError('Backend anunciou URL incorreta para OAuth2')
                 original = ROOT / 'src/main/resources/static/app/index.html'
                 (static / 'app/index.html').write_text('stale frontend')
                 try:
