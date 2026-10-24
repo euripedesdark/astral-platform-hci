@@ -12,6 +12,40 @@ deploy = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(deploy)
 
 
+class DependencyInstallationTest(unittest.TestCase):
+    def commands(self, available, release):
+        with patch.object(deploy.shutil, 'which', side_effect=lambda tool: '/usr/bin/' + tool if tool in available else None), \
+                patch.object(deploy.platform, 'freedesktop_os_release', return_value=release, create=True):
+            return deploy.dependency_commands()
+
+    def test_fedora_without_apt_uses_rpm_packages(self):
+        commands = self.commands({'dnf'}, {'ID': 'fedora'})
+        self.assertEqual(commands[0][:3], ['/usr/bin/dnf', 'install', '-y'])
+        self.assertIn('openssl-devel', commands[0])
+        self.assertIn('pkgconf-pkg-config', commands[0])
+        self.assertNotIn('libssl-dev', commands[0])
+
+    def test_rhel_prefers_dnf_even_if_apt_exists(self):
+        commands = self.commands({'dnf', 'apt-get'}, {'ID': 'rocky', 'ID_LIKE': 'rhel centos fedora'})
+        self.assertEqual(commands[0][0], '/usr/bin/dnf')
+
+    def test_yum_fallback(self):
+        commands = self.commands({'yum'}, {'ID': 'centos'})
+        self.assertEqual(commands[0][0], '/usr/bin/yum')
+
+    def test_debian_refreshes_index_and_uses_deb_packages(self):
+        commands = self.commands({'apt-get'}, {'ID': 'ubuntu', 'ID_LIKE': 'debian'})
+        self.assertEqual(commands[0], ['/usr/bin/apt-get', 'update'])
+        self.assertIn('libssl-dev', commands[1])
+        self.assertIn('build-essential', commands[1])
+
+    def test_missing_manager_fails_before_any_command_runs(self):
+        with patch.object(deploy, 'run') as run:
+            with self.assertRaisesRegex(RuntimeError, 'Nenhum gerenciador suportado'):
+                self.commands(set(), {'ID': 'unknown'})
+            run.assert_not_called()
+
+
 class DeploymentTest(unittest.TestCase):
     def scenario(self, failure=None):
         temporary = tempfile.TemporaryDirectory()

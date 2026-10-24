@@ -13,7 +13,8 @@ git pull --ff-only origin main &&
 python3 deploy_platform.py --install-deps
 ```
 
-O script solicita sudo, instala dependencias Debian/Ubuntu (compilador,
+O script solicita sudo, detecta o gerenciador e instala dependencias Fedora/RHEL/derivados via dnf/yum
+ou Debian/Ubuntu via apt-get (compilador,
 OpenSSL, pkg-config, Node/npm; instala Rust estavel via rustup se ausente),
 confere ferramentas e systemd **antes de parar o servico**. Node.js >=18 e
 Rust estavel sao necessarios; se a distribuicao fornecer Node antigo, atualize-o
@@ -70,3 +71,12 @@ Teste HTTP da release compilada, sem systemd nem alteracoes no banco:
 python3 scripts/smoke-platform.py
 python3 -m unittest discover -s scripts/tests -v
 ```
+
+## Gerenciador de pacotes
+
+`--install-deps` detecta a familia em `/etc/os-release` e confere os executaveis
+existentes. Fedora/RHEL usam `dnf` (ou `yum`); Debian/Ubuntu usam `apt-get`.
+Sistemas sem esses gerenciadores recebem diagnostico antes de parar o HCI.
+Nao e necessario instalar apt em Fedora. Na familia RPM, instala `gcc`,
+`gcc-c++`, `make`, `pkgconf-pkg-config` e `openssl-devel`, alem de Node/npm,
+Git e certificados CA. Os repositorios habilitados precisam fornecer Node >=18.

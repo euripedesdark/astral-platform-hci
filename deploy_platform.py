@@ -29,6 +29,33 @@ def run(args, **kwargs):
     return subprocess.run(list(map(str, args)), check=True, **kwargs)
 
 
+
+def dependency_commands():
+    """Select the host package manager before changing services or installing."""
+    try:
+        release = getattr(platform, 'freedesktop_os_release', lambda: {})()
+    except OSError:
+        release = {}
+    family = set((release.get('ID', '') + ' ' + release.get('ID_LIKE', '')).split())
+    managers = ('dnf', 'yum', 'apt-get') if family & {
+        'fedora', 'rhel', 'centos', 'rocky', 'almalinux'
+    } else ('apt-get', 'dnf', 'yum')
+    for manager in managers:
+        executable = shutil.which(manager)
+        if not executable:
+            continue
+        if manager == 'apt-get':
+            return [[executable, 'update'], [executable, 'install', '-y',
+                     'build-essential', 'pkg-config', 'libssl-dev', 'nodejs',
+                     'npm', 'ca-certificates', 'git']]
+        return [[executable, 'install', '-y', 'gcc', 'gcc-c++', 'make',
+                 'pkgconf-pkg-config', 'openssl-devel', 'nodejs', 'npm',
+                 'ca-certificates', 'git']]
+    raise RuntimeError('Nenhum gerenciador suportado encontrado (dnf, yum ou apt-get). '
+                       'Instale compilador C/C++, make, pkg-config, OpenSSL devel, '
+                       'Node.js >=18, npm, git e certificados CA; execute sem --install-deps.')
+
+
 def systemctl(*args, check=True):
     return subprocess.run(['systemctl', *args], check=check, stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE, text=True)
@@ -111,7 +138,7 @@ Alias={LEGACY}
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--install-deps', action='store_true', help='instalar dependencias Debian/Ubuntu via apt')
+    parser.add_argument('--install-deps', action='store_true', help='instalar dependencias via dnf/yum (Fedora/RHEL) ou apt-get (Debian/Ubuntu)')
     parser.add_argument('--port', type=int, default=8082)
     parser.add_argument('--check', action='store_true', help='verificar servico e frontend sem alterar arquivos')
     parser.add_argument('--plan', action='store_true', help='mostrar etapas sem executar')
@@ -140,8 +167,8 @@ def main():
                 os.setuid(user.pw_uid)
         return run(command, cwd=cwd, env=build_env, preexec_fn=demote, **kwargs)
     if args.install_deps:
-        run(['apt-get', 'update'])
-        run(['apt-get', 'install', '-y', 'build-essential', 'pkg-config', 'libssl-dev', 'nodejs', 'npm', 'ca-certificates'])
+        for command in dependency_commands():
+            run(command)
     if args.install_deps and not shutil.which('cargo', path=build_env['PATH']):
         arch = {'x86_64': 'x86_64', 'aarch64': 'aarch64'}.get(platform.machine())
         if not arch:
@@ -155,7 +182,7 @@ def main():
             build([str(installer), '-y', '--profile', 'minimal', '--default-toolchain', 'stable'])
     for tool in ('cargo', 'rustc', 'npm', 'node', 'cc', 'pkg-config', 'systemctl', 'git'):
         if not shutil.which(tool, path=build_env['PATH']):
-            raise RuntimeError(f'{tool} ausente. Instale Rust estavel via rustup para seu usuario; use --install-deps para dependencias Debian/Ubuntu.')
+            raise RuntimeError(f'{tool} ausente. Instale Rust estavel via rustup para seu usuario; use --install-deps para dependencias Fedora/RHEL ou Debian/Ubuntu.')
     run(['pkg-config', '--exists', 'openssl'])
     build(['cargo', '--version'])
     node_version = subprocess.check_output(['node', '--version'], env=build_env, text=True).strip()
